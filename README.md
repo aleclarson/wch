@@ -2,4 +2,16 @@
 
 File watching daemon w/ CLI
 
-**NOTE:** Not yet ready for use!
+## CLI
+
+```sh
+# Start the daemon.
+wch start
+
+# Stop the daemon.
+wch stop
+
+# Watch the current directory (recursively).
+wch .
+```
+
