@@ -12,9 +12,6 @@ process.env.VERBOSE =
 
 let cmd = process.argv[2]
 switch(cmd) {
-  case '.': // Watch current root
-    watch(process.cwd())
-    break
   case 'start': // Start the daemon
     let starting = wch.start()
     if (starting) {
@@ -64,6 +61,10 @@ switch(cmd) {
       x: {rest: true},
       v: true, // verbose errors
     })
+
+    // Watch the current directory.
+    if (args._ == '.')
+      return watch(process.cwd())
 
     if (Array.isArray(args.x) && !args.w)
       fatal('Cannot use -x without -w')
