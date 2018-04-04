@@ -59,9 +59,7 @@ api.POST('/stop', (req) => {
   log.red('Shutting down...')
   setTimeout(() => {
     req.app.close()
-    watcher.stream.each(stream => {
-      stream.destroy()
-    })
+    watcher.stop()
   }, 100)
   return true
 })
