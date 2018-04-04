@@ -35,6 +35,7 @@ api.GET('/events', async (req, res) => {
       return 400
     }
 
+    res.setTimeout(0)
     res.set({
       'Connection': 'keep-alive',
       'Content-Type': 'text/event-stream; charset=utf-8',
