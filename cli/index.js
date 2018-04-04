@@ -61,10 +61,23 @@ switch(cmd) {
     let args = slurm({
       w: {list: true},
       u: {list: true},
+      x: {rest: true},
       v: true, // verbose errors
     })
+
+    if (Array.isArray(args.x) && !args.w)
+      fatal('Cannot use -x without -w')
+
     if (args.length || !args.w && !args.u)
       fatal('Unrecognized command')
+
+    if (Array.isArray(args.x)) {
+      if (args.w.length > 1) {
+        fatal('Cannot use -x on multiple roots')
+      }
+      let root = path.resolve(args.w[0])
+      return runAndWatch(root, args.x[0], args.x.slice(1))
+    }
     if (args.w)
       args.w.forEach(watch)
     if (args.u)
@@ -83,6 +96,54 @@ async function watch(root) {
     if (success) good('Watching:', root)
     else warn('Already watching:', root)
   }).catch(fatal)
+}
+
+// Restart a child process when files change.
+function runAndWatch(root, cmd, args) {
+  let {spawn} = require('child_process')
+
+  let proc = run()
+  let kill = debounce(100, () => {
+    if (!proc) return rerun()
+    proc.once('exit', rerun).kill()
+  })
+
+  wch.stream(root, {
+    exclude: [
+      '.git',
+      '.git/**',
+      '.*.sw[a-z]', '*~', // vim temporary files
+      '.DS_Store',        // macOS Finder metadata
+    ]
+  }).on('data', kill)
+
+  function run() {
+    return spawn(cmd, args, {
+      stdio: ['ignore', 'inherit', 'inherit']
+    }).on('error', fatal).on('exit', die)
+  }
+
+  function die() {
+    proc = null
+  }
+
+  function rerun() {
+    if (!args.v) {
+      // 1. Print empty lines until the screen is blank.
+      process.stdout.write('\033[2J')
+      // 2. Clear the scrollback.
+      process.stdout.write('\u001b[H\u001b[2J\u001b[3J')
+    }
+    proc = run()
+  }
+
+  function debounce(delay, fn) {
+    let timer
+    return function() {
+      clearTimeout(timer)
+      timer = setTimeout(fn, delay)
+    }
+  }
 }
 
 function good(label, ...args) {
