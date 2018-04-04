@@ -25,7 +25,7 @@ exports.load = function(root) {
       // Handle added plugins.
       found.forEach(name => {
         if (!loaded.includes(name)) {
-          let plugin = pluginsByName[name] || loadPlugin(name)
+          let plugin = pluginsByName[name] || bootPlugin(name)
           if (!plugin) return
           try {
             plugin.load(root)
@@ -90,16 +90,17 @@ function findPlugins(deps) {
     .filter(name => name.startsWith('wch-'))
 }
 
-function loadPlugin(name) {
+function bootPlugin(name) {
+  if (log.verbose)
+    log.pale_blue('Booting plugin:', name)
   try {
-    log.pale_yellow('Loading plugin:', name)
     let plugin = require(name)
     if (!plugin || !plugin.load) {
       return log.red('PluginError:', `'${name}' failed to return` +
         ` an object with a 'load' method!`)
     }
     plugin.roots = new Set()
-    if (plugin.start) plugin.start()
+    if (plugin.boot) plugin.boot()
     pluginsByName[name] = plugin
     return plugin
   }
