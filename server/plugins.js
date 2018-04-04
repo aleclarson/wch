@@ -55,7 +55,6 @@ exports.load = function(root) {
 // Unload plugins for a package root (or all roots).
 exports.unload = function(root) {
   if (arguments.length) {
-    log.pale_pink('Unloading plugins for:', root)
     let loaded = pluginsByRoot[root]
     if (loaded) {
       delete pluginsByRoot[root]
@@ -116,13 +115,13 @@ function bootPlugin(name) {
 }
 
 function unloadPlugin(name, root) {
-  log.pale_pink('Unloading plugin:', name)
   let plugin = pluginsByName[name]
   if (plugin.unload) plugin.unload(root)
   plugin.roots.delete(root)
   if (plugin.roots.size == 0) {
-    log.red('Stopping plugin:', name)
-    if (plugin.stop) plugin.stop()
+    if (log.verbose)
+      log.pale_pink('Killing plugin:', name)
+    if (plugin.kill) plugin.kill()
     delete pluginsByName[name]
   }
 }
