@@ -1,5 +1,6 @@
 let {Readable} = require('stream')
 let quest = require('quest')
+let path = require('path')
 let cp = require('child_process')
 let fs = require('fsx')
 
@@ -8,6 +9,9 @@ let {
   SOCK_PATH,
   LOG_PATH,
 } = require('./server/paths')
+
+let SOCK_NAME = path.relative(WCH_DIR, SOCK_PATH)
+let LOG_NAME = path.relative(WCH_DIR, LOG_PATH)
 
 let sock = quest.sock(SOCK_PATH)
 let request = sock.request.bind(sock)
@@ -70,12 +74,12 @@ wch.start = function() {
 
     // The socket is touched when the server is ready.
     let watcher = fs.watch(WCH_DIR, (evt, file) => {
-      if (file == 'server.sock') {
+      if (file == SOCK_NAME) {
         watcher.close()
         proc.unref()
         resolve()
       }
-      else if (file == 'server.log') {
+      else if (file == LOG_NAME) {
         let logs = fs.readFile(LOG_PATH)
         let regex = /(?:^|\n)([^\n:]*Error): (.*)((?:\n +at [^\n]+)*)/m
         let match = regex.exec(logs)
