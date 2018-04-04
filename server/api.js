@@ -1,4 +1,5 @@
 let plugins = require('./plugins')
+let watcher = require('./watcher')
 let Router = require('yiss')
 let wch = require('./client')
 let log = require('./log')
@@ -55,7 +56,12 @@ api.GET('/events', async (req, res) => {
 
 api.POST('/stop', (req) => {
   log.red('Shutting down...')
-  setTimeout(() => req.app.close(), 100)
+  setTimeout(() => {
+    req.app.close()
+    watcher.stream.each(stream => {
+      stream.destroy()
+    })
+  }, 100)
   return true
 })
 
