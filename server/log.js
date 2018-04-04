@@ -12,5 +12,6 @@ let logs = {
 onWrite(process.stdout, logs.append)
 onWrite(process.stderr, logs.append)
 
-module.exports =
-  huey.log(console.log.bind(), !process.env.NO_COLOR)
+let log = huey.log(console.log.bind(), !process.env.NO_COLOR)
+log.verbose = !!process.env.VERBOSE
+module.exports = log

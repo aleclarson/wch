@@ -68,7 +68,8 @@ exports.unload = function(root) {
       })
     }
   } else {
-    log.red('Unloading all plugins...')
+    if (log.verbose)
+      log.pale_pink('Unloading all plugins...')
     for (let name in pluginsByName) {
       let plugin = pluginsByName[name]
       if (plugin.unload) {

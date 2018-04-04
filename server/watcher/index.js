@@ -22,7 +22,8 @@ module.exports = {
     throw Error('Not implemented yet')
   },
   stop() {
-    log.red('Closing watch streams...')
+    if (log.verbose)
+      log.pale_pink('Closing watch streams...')
     stream.each(stream => {
       stream.destroy()
     })
