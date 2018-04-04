@@ -7,12 +7,20 @@ let wch = require('..')
 
 let {log} = console
 
-process.env.VERBOSE =
-  process.argv.includes('-v') ? '1' : ''
+let args = process.argv
+process.env.VERBOSE = args.includes('-v') ? '1' : ''
 
-let cmd = process.argv[2]
+let cmd = args[2]
 switch(cmd) {
   case 'start': // Start the daemon
+    args = slurm({
+      f: {type: 'boolean'},
+      v: true,
+    })
+    if (args.f) {
+      // Run the server in foreground.
+      return require('../server')
+    }
     let starting = wch.start()
     if (starting) {
       warn('Starting server...')
@@ -55,11 +63,11 @@ switch(cmd) {
   case 'touch': // Trigger file events
     fatal('Not implemented yet')
   default:
-    let args = slurm({
+    args = slurm({
       w: {list: true},
       u: {list: true},
       x: {rest: true},
-      v: true, // verbose errors
+      v: true,
     })
 
     // Watch the current directory.
