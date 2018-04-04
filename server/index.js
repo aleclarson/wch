@@ -16,6 +16,7 @@ onExit(() => {
 
 // Connect to watchman.
 let starting = watcher.start()
+starting.catch(onError)
 
 // Start the API server.
 slush({
