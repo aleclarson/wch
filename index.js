@@ -32,7 +32,7 @@ wch.unwatch = async function(root) {
 
 // Event streaming.
 wch.stream = function(root, opts) {
-  let req = sock.request('/events', {
+  let req = sock.request('GET', '/events', {
     'Accept': 'text/event-stream',
   })
   let stream = send(req, {
@@ -43,6 +43,7 @@ wch.stream = function(root, opts) {
     let file = data? JSON.parse(data) : null
     return push.call(this, file, enc)
   }
+  stream._readableState.objectMode = true
   return stream
 }
 
