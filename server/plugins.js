@@ -78,7 +78,7 @@ exports.unload = function(root) {
         })
       }
       plugin.roots.clear()
-      if (plugin.stop) plugin.stop()
+      if (plugin.kill) plugin.kill()
     }
     pluginsByName = Object.create(null)
     pluginsByRoot = Object.create(null)
