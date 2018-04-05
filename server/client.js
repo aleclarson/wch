@@ -1,4 +1,5 @@
 let {PassThrough} = require('stream')
+let emitter = require('./emitter')
 let plugins = require('./plugins')
 let log = require('./log')
 let _ = require('./watcher')
@@ -16,6 +17,10 @@ wch.unwatch = function(root) {
     return true
   }
 }
+
+// Plugin events
+wch.emit = emitter.emit
+wch.on = emitter.on
 
 wch.list = _.list
 wch.query = _.query

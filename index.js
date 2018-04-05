@@ -30,21 +30,40 @@ wch.unwatch = async function(root) {
   return quest.json(res).then(success)
 }
 
-// Event streaming.
-wch.stream = function(root, opts) {
-  let req = sock.request('GET', '/events', {
-    'Accept': 'text/event-stream',
+// TODO: One event stream for all listeners.
+let pluginStreams = new Map()
+
+// Plugin event streaming.
+wch.on = function(id, fn) {
+  let multi = id.trim().indexOf(' ') > 0
+  let head = {accept: 'text/json-stream'}
+  let req = sock.request('GET', '/events/plugin', head)
+  req.on('error', (err) => {
+    wch.on(id, fn) // TODO: Add retry backoff
   })
-  let stream = send(req, {
-    root, opts,
+  let stream = parseJsonStream(send(req, id))
+  stream.on('data', (event) => {
+    if (multi) fn(event.id, ...event.args)
+    else fn(...event.args)
+  }).on('end', () => {
+    wch.on(id, fn) // TODO: Add reconnect backoff
   })
-  let {push} = stream
-  stream.push = function(data, enc) {
-    let file = data? JSON.parse(data) : null
-    return push.call(this, file, enc)
+  pluginStreams.set(fn, stream)
+}
+wch.off = function(fn) {
+  let stream = pluginStreams.get(fn)
+  if (stream) {
+    stream.end()
+    pluginStreams.delete(fn)
   }
-  stream._readableState.objectMode = true
-  return stream
+}
+
+// File event streaming.
+wch.stream = function(root, opts) {
+  let head = {accept: 'text/json-stream'}
+  let req = sock.request('GET', '/events/file', head)
+  let body = {root, opts}
+  return parseJsonStream(send(req, body))
 }
 
 // File queries.
@@ -148,4 +167,24 @@ function estream(err) {
       this.emit('error', err)
     }
   })
+}
+
+function parseJsonStream(stream) {
+  let {push} = stream
+  stream.push = function(val, enc) {
+    if (val) {
+      if (Buffer.isBuffer(val)) {
+        val = val.toString()
+      }
+      try {
+        val = JSON.parse(val)
+      } catch(err) {
+        err.json = val
+        return stream.emit('error', err)
+      }
+    }
+    return push.call(this, val)
+  }
+  stream._readableState.objectMode = true
+  return stream
 }
