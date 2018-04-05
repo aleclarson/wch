@@ -52,6 +52,9 @@ class WatchStream extends Readable {
     })
     this.root = root
     this.opts = opts || {}
+    if (opts && opts.clock != null) {
+      this.clock = opts.clock
+    }
   }
   _subscribe() {
     if (!this.id) this.id = uuid()
@@ -62,12 +65,12 @@ class WatchStream extends Readable {
       this.watch = res.watch == this.root ? null : res.watch
 
       // Fetch the current time if no clock is set.
-      if (!this.clock) {
+      if (this.clock == null) {
         this.clock = (await wm.clock(res.watch)).clock
       }
 
       return wm.subscribe(res.watch, this.id, {
-        since: this.clock,
+        since: this.clock || 0,
         fields: this.opts.fields || ['name', 'exists', 'new'],
         expression: query.filter(this.opts),
         relative_root: res.relative_path || '',
