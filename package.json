@@ -1,6 +1,6 @@
 {
   "name": "wch",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "bin": {
     "wch": "./cli/index.js"
   },
