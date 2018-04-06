@@ -91,6 +91,9 @@ function pipeJson(stream, res) {
       stream.emit('error', err)
     }
   }).on('end', () => res.end())
+  stream.on('error', (err) => {
+    console.error(err.stack)
+  })
   res.on('close', () => stream.destroy())
   res.set({
     'Connection': 'keep-alive',
