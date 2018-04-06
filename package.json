@@ -7,10 +7,10 @@
   "dependencies": {
     "fsx": "aleclarson/fsx#1.6.0",
     "noop": "aleclarson/noop#0.0.1",
-    "on-exit": "aleclarson/on-exit#0.0.1",
     "on-write": "aleclarson/on-write#0.0.1",
     "slurm": "^0.3.0",
     "slush": "aleclarson/slush#3.1.0",
+    "unhandled": "aleclarson/unhandled#1.0.0",
     "uuid": "aleclarson/uuid#3.1.0",
     "yiss": "^0.0.2"
   }

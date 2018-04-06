@@ -5,8 +5,8 @@ process.title = 'wch'
 // Ensure ~/.wch exists
 require('fsx').writeDir(require('./paths').WCH_DIR)
 
-// Provide an exit hook.
-global.onExit = require('on-exit')
+// Default behavior for unhandled process events.
+require('unhandled')
 
 // Setup the log file.
 require('./log')

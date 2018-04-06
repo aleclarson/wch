@@ -8,7 +8,7 @@ let fs = require('fsx')
 
 let {SOCK_PATH} = require('./paths')
 
-onExit(() => {
+process.on('exit', () => {
   watcher.stop()
   plugins.unload()
   fs.removeFile(SOCK_PATH, false)
