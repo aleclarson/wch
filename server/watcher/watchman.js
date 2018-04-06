@@ -45,7 +45,6 @@ function connect(resolve, reject) {
       reject(err)
     } else {
       console.error(err.stack)
-      process.exit(1)
     }
   })
   .on('subscription', (res) => {
