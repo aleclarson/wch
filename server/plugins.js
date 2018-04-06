@@ -25,13 +25,13 @@ exports.load = function(root) {
       // Handle added plugins.
       found.forEach(name => {
         if (!loaded.includes(name)) {
-          let plugin = pluginsByName[name] || bootPlugin(name)
+          let plugin = pluginsByName[name] || runPlugin(name)
           if (!plugin) return
           try {
-            plugin.load(root)
+            plugin.add(root)
             loaded.push(name)
           } catch(err) {
-            log.red('PluginError:', `'${name}' failed to load root: ` + root)
+            log.red('PluginError:', `'${name}' failed to add root: ` + root)
             console.error(err.stack)
           }
         }
@@ -68,17 +68,15 @@ exports.unload = function(root) {
       })
     }
   } else {
-    if (log.verbose)
-      log.pale_pink('Unloading all plugins...')
     for (let name in pluginsByName) {
       let plugin = pluginsByName[name]
-      if (plugin.unload) {
+      if (plugin.remove) {
         plugin.roots.forEach(root => {
-          plugin.unload(root)
+          plugin.remove(root)
         })
       }
       plugin.roots.clear()
-      if (plugin.kill) plugin.kill()
+      if (plugin.end) plugin.end()
     }
     pluginsByName = Object.create(null)
     pluginsByRoot = Object.create(null)
@@ -90,17 +88,17 @@ function findPlugins(deps) {
     .filter(name => name.startsWith('wch-'))
 }
 
-function bootPlugin(name) {
+function runPlugin(name) {
   if (log.verbose)
-    log.pale_blue('Booting plugin:', name)
+    log.pale_blue('Running plugin:', name)
   try {
     let plugin = require(name)
-    if (!plugin || !plugin.load) {
+    if (!plugin || typeof plugin.add != 'function') {
       return log.red('PluginError:', `'${name}' failed to return` +
-        ` an object with a 'load' method!`)
+        ` an object with an 'add' method!`)
     }
     plugin.roots = new Set()
-    if (plugin.boot) plugin.boot()
+    if (plugin.run) plugin.run()
     pluginsByName[name] = plugin
     return plugin
   }
@@ -117,12 +115,12 @@ function bootPlugin(name) {
 
 function unloadPlugin(name, root) {
   let plugin = pluginsByName[name]
-  if (plugin.unload) plugin.unload(root)
+  if (plugin.remove) plugin.remove(root)
   plugin.roots.delete(root)
   if (plugin.roots.size == 0) {
     if (log.verbose)
       log.pale_pink('Killing plugin:', name)
-    if (plugin.kill) plugin.kill()
+    if (plugin.end) plugin.end()
     delete pluginsByName[name]
   }
 }
