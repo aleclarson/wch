@@ -12,6 +12,11 @@ function stream(root, opts) {
   return stream._subscribe()
 }
 
+stream.destroy = function(id) {
+  let stream = streams.get(id)
+  if (stream) stream.destroy()
+}
+
 stream.each = function(fn) {
   streams.forEach(fn)
 }

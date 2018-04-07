@@ -1,4 +1,5 @@
 let {Readable} = require('stream')
+let events = require('./events')
 let quest = require('quest')
 let path = require('path')
 let cp = require('child_process')
@@ -8,62 +9,83 @@ let {
   WCH_DIR,
   SOCK_PATH,
   LOG_PATH,
-} = require('./server/paths')
+} = require('../server/paths')
 
 let SOCK_NAME = path.relative(WCH_DIR, SOCK_PATH)
 let LOG_NAME = path.relative(WCH_DIR, LOG_PATH)
 
-let sock = quest.sock(SOCK_PATH)
+let sock = require('./sock')
 let request = sock.request.bind(sock)
 
 // Watch a root.
-function wch(root) {
+async function wch(root) {
+  if (!sock.connected)
+    throw notConnected()
   let req = request('PUT', '/roots')
-  let res = send(req, {root})
-  return quest.json(res).then(success)
+  return quest.json(res, {root}).then(success)
 }
 
 // Unwatch a root.
 wch.unwatch = async function(root) {
+  if (!sock.connected)
+    throw notConnected()
   let req = request('DELETE', '/roots')
-  let res = send(req, {root})
-  return quest.json(res).then(success)
+  return quest.json(res, {root}).then(success)
 }
 
-// TODO: One event stream for all listeners.
-let pluginStreams = new Map()
+// Plugin events
+wch.on = events.on
 
-// Plugin event streaming.
-wch.on = function(id, fn) {
-  let multi = id.trim().indexOf(' ') > 0
-  let head = {accept: 'text/json-stream'}
-  let req = sock.request('GET', '/events/plugin', head)
-  req.on('error', (err) => {
-    wch.on(id, fn) // TODO: Add retry backoff
-  })
-  let stream = parseJsonStream(send(req, id))
-  stream.on('data', (event) => {
-    if (multi) fn(event.id, ...event.args)
-    else fn(...event.args)
-  }).on('end', () => {
-    wch.on(id, fn) // TODO: Add reconnect backoff
-  })
-  pluginStreams.set(fn, stream)
-}
-wch.off = function(fn) {
-  let stream = pluginStreams.get(fn)
-  if (stream) {
-    stream.end()
-    pluginStreams.delete(fn)
-  }
-}
+let noop = Function.prototype
 
-// File event streaming.
+// File event streaming
 wch.stream = function(root, opts) {
-  let head = {accept: 'text/json-stream'}
-  let req = sock.request('GET', '/events/file', head)
-  let body = {root, opts}
-  return parseJsonStream(send(req, body))
+  let rewatcher = null
+  let stream = new Readable({
+    read: noop, // Push only
+    objectMode: true,
+    destroy,
+  })
+  let watching = watch()
+  watching.catch(fatal)
+  return stream
+
+  async function watch() {
+    await sock.connect()
+    console.log('watch:', root, opts)
+
+    // Rewatch on server restart.
+    rewatcher = events.on('connect', () => {
+      watching = watch()
+      watching.catch(fatal)
+    })
+
+    // Setup the watch subscription.
+    let req = request('POST', '/watch')
+    let {id} = await quest.json(req, {root, opts})
+
+    console.log('stream.id =>', id)
+    return events.watch(id, (file) => {
+      stream.push(file)
+    })
+  }
+  function destroy(err, next) {
+    this.push(null)
+    watching.then(watcher => {
+      watcher.dispose()
+      rewatcher.dispose()
+      if (sock.connected) {
+        let req = request('POST', '/unwatch')
+        quest.send(req, {
+          id: watcher.id,
+        }).end()
+      }
+      next(err)
+    })
+  }
+  function fatal(err) {
+    stream.destroy(err)
+  }
 }
 
 // File queries.
@@ -72,7 +94,8 @@ wch.query = function(root, opts) {
 }
 
 wch.list = async function() {
-  return (await getJson('/roots')).roots
+  if (!socket.connected) throw notConnected()
+  return (await sock.json('/roots')).roots
 }
 
 // Start the daemon.
@@ -84,7 +107,7 @@ wch.start = function() {
 
     // Start the server.
     let serverPath = __dirname + '/server'
-    let proc = cp.spawn('node', ['--trace-warnings', serverPath], {
+    let proc = cp.spawn('node', [serverPath], {
       stdio: 'ignore',
       detached: true,
     }).on('error', (err) => {
@@ -140,22 +163,6 @@ wch.stop = function() {
 
 module.exports = wch
 
-// Throw a timeout error when the server is down.
-let SOCK_408 = Error('The wch server is down. Try doing `wch start`')
-SOCK_408.code = 408
-
-function getJson(url, headers) {
-  if (fs.exists(sock.path))
-    return sock.json(url, headers)
-  throw SOCK_408
-}
-
-function send(req, body) {
-  return fs.exists(sock.path) ?
-    quest.send(req, body) :
-    estream(SOCK_408)
-}
-
 function success(res) {
   return !res || !res.error
 }
@@ -167,6 +174,12 @@ function estream(err) {
       this.emit('error', err)
     }
   })
+}
+
+function notConnected() {
+  let err = Error('Not connected to wch')
+  err.code = 408
+  return err
 }
 
 function parseJsonStream(stream) {

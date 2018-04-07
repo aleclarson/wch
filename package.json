@@ -1,6 +1,7 @@
 {
   "name": "wch",
   "version": "0.2.0",
+  "main": "client/index",
   "bin": {
     "wch": "./cli/index.js"
   },

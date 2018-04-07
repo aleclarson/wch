@@ -1,11 +1,20 @@
+let {Readable} = require('stream')
+let noop = require('noop')
+
+let streams = new Set()
 let events = Object.create(null)
 let all = []
 
 function emit(id, ...args) {
   let subs = events[id]
-  if (subs)
-    subs.forEach(fn => fn(...args))
-  all.forEach(fn => fn(id, args))
+  if (subs) subs.forEach(fn => fn(...args))
+  if (all.length) all.forEach(fn => fn(id, args))
+  if (streams.size) {
+    let event = id + '\n' + JSON.stringify(args) + '\n\n'
+    streams.forEach(stream => {
+      stream.push(event)
+    })
+  }
 }
 
 function on(id, fn) {
@@ -41,6 +50,16 @@ function remove(subs, fn) {
   if (idx >= 0) subs.splice(idx, 1)
 }
 
+function stream() {
+  let stream = new Readable({
+    read: noop, // No pulling
+  }).on('end', () => {
+    streams.delete(stream)
+  })
+  streams.add(stream)
+  return stream
+}
+
 module.exports = {
-  emit, on, off,
+  emit, on, off, stream,
 }

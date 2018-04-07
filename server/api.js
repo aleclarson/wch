@@ -1,5 +1,5 @@
 let {PassThrough} = require('stream')
-let plugins = require('./plugins')
+let emitter = require('./emitter')
 let watcher = require('./watcher')
 let Router = require('yiss')
 let wch = require('./client')
@@ -28,45 +28,45 @@ api.listen('PUT|DELETE', '/roots', async (req, res) => {
   return true
 })
 
-api.GET('/events/file', async (req, res) => {
-  if (req.accepts('text/json-stream')) {
-    let {root, opts} = await req.json()
-    if (typeof root != 'string') {
-      res.set('Error', '`root` must be a string')
-      return 400
-    }
-    pipeJson(wch.stream(root, opts), res)
+api.POST('/watch', async (req, res) => {
+  let {root, opts} = await req.json()
+  if (typeof root != 'string') {
+    res.set('Error', '`root` must be a string')
+    return 400
   }
-  else {
-    return 406
-  }
+  let stream = wch.stream(root, opts)
+  stream.on('data', (file) => {
+    log.pale_green('changed:', file.path)
+    emitter.emit('watch', {
+      id: stream.id,
+      file,
+    })
+  })
+  return {id: stream.id}
 })
 
-setInterval(() => {
-  wch.emit('date', new Date)
-}, 2000)
+api.POST('/unwatch', async (req, res) => {
+  let {id} = await req.json()
+  if (typeof id != 'string') {
+    res.set('Error', '`id` must be a string')
+    return 400
+  }
+  wch.stream.destroy(id)
+  return 200
+})
 
-api.GET('/events/plugin', async (req, res) => {
-  if (req.accepts('text/json-stream')) {
-    let body = await req.readBody()
-    if (!body) {
-      res.set('Error', 'Request body must be a string')
-      return 400
-    }
-    let events = body.toString().split(' ')
-    let stream = new PassThrough({
-      objectMode: true,
-    })
-    stream.on('end', wch.on('*', (id, args) => {
-      if (events.includes(id)) {
-        stream.write({id, args})
-      }
-    }))
-    pipeJson(stream, res)
-  }
-  else {
-    return 406
-  }
+api.GET('/events', (req, res) => {
+  res.setTimeout(0)
+  res.set({
+    'Connection': 'keep-alive',
+    'Content-Type': 'text/event-stream',
+    'Transfer-Encoding': 'chunked',
+  })
+  res.flushHeaders()
+
+  let stream = emitter.stream()
+    .on('error', (err) => console.error(err.stack))
+    .pipe(res).on('close', () => stream.end())
 })
 
 api.POST('/stop', (req) => {
@@ -79,27 +79,3 @@ api.POST('/stop', (req) => {
 })
 
 module.exports = api.bind()
-
-function pipeJson(stream, res) {
-  if (!stream._readableState.objectMode) {
-    throw Error('JSON stream must be in object mode')
-  }
-  stream.on('data', (obj) => {
-    try {
-      res.write(JSON.stringify(obj))
-    } catch(err) {
-      stream.emit('error', err)
-    }
-  }).on('end', () => res.end())
-  stream.on('error', (err) => {
-    console.error(err.stack)
-  })
-  res.on('close', () => stream.destroy())
-  res.set({
-    'Connection': 'keep-alive',
-    'Content-Type': 'text/json-stream; charset=utf-8',
-    'Transfer-Encoding': 'chunked',
-  })
-  res.flushHeaders()
-  res.setTimeout(0)
-}
