@@ -1,4 +1,4 @@
-let {Readable} = require('stream')
+let {Readable} = require('readable-stream')
 let events = require('./events')
 let quest = require('quest')
 let path = require('path')

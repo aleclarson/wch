@@ -1,4 +1,3 @@
-let {PassThrough} = require('stream')
 let emitter = require('./emitter')
 let watcher = require('./watcher')
 let Router = require('yiss')

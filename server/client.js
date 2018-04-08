@@ -1,4 +1,3 @@
-let {PassThrough} = require('stream')
 let emitter = require('./emitter')
 let plugins = require('./plugins')
 let log = require('./log')

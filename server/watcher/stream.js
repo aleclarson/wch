@@ -1,4 +1,4 @@
-let {Readable} = require('stream')
+let {Readable} = require('readable-stream')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
