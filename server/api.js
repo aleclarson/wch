@@ -53,6 +53,7 @@ api.POST('/watch', async (req, res) => {
       file,
     })
   })
+  stream.clientId = clientId
   clients[clientId].add(stream)
   return {id: stream.id}
 })
@@ -63,7 +64,9 @@ api.POST('/unwatch', async (req, res) => {
     res.set('Error', '`id` must be a string')
     return 400
   }
-  wch.stream.destroy(id)
+  let stream = wch.stream.get(id)
+  clients[stream.clientId].delete(stream)
+  stream.destroy()
   return 200
 })
 
