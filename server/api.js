@@ -28,7 +28,19 @@ api.listen('PUT|DELETE', '/roots', async (req, res) => {
   return true
 })
 
+// Map clients to their watch streams.
+let clients = Object.create(null)
+
 api.POST('/watch', async (req, res) => {
+  let clientId = req.get('x-client-id')
+  if (!clientId) {
+    res.set('Error', '`x-client-id` must be set')
+    return 400
+  }
+  if (clients[clientId] == null) {
+    res.set('Error', '`x-client-id` is invalid')
+    return 400
+  }
   let {root, opts} = await req.json()
   if (typeof root != 'string') {
     res.set('Error', '`root` must be a string')
@@ -42,6 +54,7 @@ api.POST('/watch', async (req, res) => {
       file,
     })
   })
+  clients[clientId].add(stream)
   return {id: stream.id}
 })
 
@@ -56,6 +69,16 @@ api.POST('/unwatch', async (req, res) => {
 })
 
 api.GET('/events', (req, res) => {
+  let clientId = req.get('x-client-id')
+  if (!clientId) {
+    res.set('Error', '`x-client-id` header must be set')
+    return 400
+  }
+  if (clients[clientId] != null) {
+    res.set('Error', '`x-client-id` already in use')
+    return 400
+  }
+
   res.setTimeout(0)
   res.set({
     'Connection': 'keep-alive',
@@ -64,9 +87,18 @@ api.GET('/events', (req, res) => {
   })
   res.flushHeaders()
 
+  // Watch streams are stored here.
+  clients[clientId] = new Set()
+
   let stream = emitter.stream()
     .on('error', (err) => console.error(err.stack))
-    .pipe(res).on('close', () => stream.end())
+    .pipe(res).on('close', () => {
+      stream.destroy()
+      clients[clientId].forEach(stream => {
+        stream.destroy()
+      })
+      delete clients[clientId]
+    })
 })
 
 api.POST('/stop', (req) => {

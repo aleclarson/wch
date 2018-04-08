@@ -1,6 +1,7 @@
 let events = require('./events')
 let quest = require('quest')
 let path = require('path')
+let uuid = require('uuid')
 let fs = require('fsx')
 
 let {
@@ -40,7 +41,9 @@ let noop = Function.prototype
 let eventRE = /^([^\n]+)\n(.+)\n\n$/
 let offlineRE = /^(ENOENT|ECONNREFUSED)$/
 function connect(resolve, reject) {
-  stream = sock.stream('/events')
+  stream = sock.stream('/events', {
+    'x-client-id': sock.id = uuid(),
+  })
   stream.on('response', () => {
     if (stream.ok) {
       connecting = null

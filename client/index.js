@@ -61,7 +61,9 @@ wch.stream = function(root, opts) {
     })
 
     // Setup the watch subscription.
-    let req = request('POST', '/watch')
+    let req = request('POST', '/watch', {
+      'x-client-id': sock.id,
+    })
     let {id} = await quest.json(req, {root, opts})
 
     console.log('stream.id =>', id)
