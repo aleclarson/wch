@@ -86,7 +86,7 @@ function connect(resolve, reject) {
       }
       if (connecting) {
         connecting = null
-        reject(err)
+        reject(abortErr)
       } else {
         sock.connected = false
         events.emit('disconnect')
