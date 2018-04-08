@@ -3,7 +3,7 @@
 let slurm = require('slurm')
 let huey = require('huey')
 let path = require('path')
-let wch = require('..')
+let wch = require('.')
 
 let {log} = console
 
@@ -19,7 +19,7 @@ switch(cmd) {
     })
     if (args.f) {
       // Run the server in foreground.
-      return require('../server')
+      return require('./server')
     }
     let starting = wch.start()
     if (starting) {
@@ -49,7 +49,7 @@ switch(cmd) {
     break
   case 'logs':
     let fs = require('fsx')
-    let {LOG_PATH} = require('../server/paths')
+    let {LOG_PATH} = require('./server/paths')
     if (fs.isFile(LOG_PATH))
       fs.read(LOG_PATH).pipe(process.stdout)
     break

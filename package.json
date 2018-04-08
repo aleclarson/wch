@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "main": "client/index",
   "bin": {
-    "wch": "./cli/index.js"
+    "wch": "./cli.js"
   },
   "dependencies": {
     "fsx": "aleclarson/fsx#1.6.0",
