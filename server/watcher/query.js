@@ -55,24 +55,24 @@ async function query(dir, opts = {}) {
 }
 
 function filter(opts) {
-  if (!opts) return 'true'
-
-  let include, exclude
-  if (opts.include)
-    include = matchAny(opts.include)
-  if (opts.exclude)
-    exclude = ['not', matchAny(opts.exclude)]
-
   let expr
-  if (include && exclude) {
-    expr = ['allof', include, exclude]
-  } else expr = include || exclude
+  if (opts) {
+    let include, exclude
 
-  if (opts.exts) {
-    expr = and(expr, suffix(opts.exts))
+    if (opts.include)
+      include = matchAny(opts.include)
+
+    if (opts.exclude)
+      exclude = ['not', matchAny(opts.exclude)]
+
+    if (include && exclude) {
+      expr = ['allof', include, exclude]
+    } else expr = include || exclude
+
+    if (opts.exts)
+      expr = and(expr, suffix(opts.exts))
   }
-
-  return expr
+  return expr || 'true'
 }
 
 function matchAny(globs) {
