@@ -101,16 +101,16 @@ function reconnect(resolve, reject) {
     let fuzz = 1.25 - 0.5 * Math.random()
     let delay = fuzz * 300 * Math.pow(2.2, ++retries)
     console.log('Reconnecting in ' + delay + ' ms...')
-    let retryTimer = setTimeout(() => {
-      let p = new Promise(connect)
-      p.then(() => {
+    let retryTimer = setTimeout(async () => {
+      try {
+        await new Promise(connect)
         retries = 0
         resolve()
-      }).catch(err => {
+      } catch(err) {
         if (stream) {
           reconnect(resolve, reject)
         } else reject(err)
-      })
+      }
     }, delay)
   } else {
     console.log('Watching socket path...')
