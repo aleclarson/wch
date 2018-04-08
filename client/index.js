@@ -56,6 +56,7 @@ wch.stream = function(root, opts) {
 
     // Rewatch on server restart.
     rewatcher = events.on('connect', () => {
+      rewatcher.dispose()
       watching = watch()
       watching.catch(fatal)
     })
