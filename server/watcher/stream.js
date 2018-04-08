@@ -85,17 +85,19 @@ class WatchStream extends Readable {
     })
     return this
   }
-  _destroy(err, cb) {
+  async _destroy(err, next) {
     streams.delete(this.id)
-
-    let root = this.watch || this.root
-    let p = roots.has(root) ?
-      wm.unsubscribe(root, this.id) :
-      wm.unwatch(root)
-
-    p.then(() => {
-      this.push(null)
-      cb(err)
-    }, cb)
+    this.push(null)
+    try {
+      let root = this.watch || this.root
+      if (roots.has(root)) {
+        await wm.unsubscribe(root, this.id)
+      } else {
+        await wm.unwatch(root)
+      }
+      next(err)
+    } catch(err) {
+      next(err)
+    }
   }
 }
