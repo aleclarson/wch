@@ -36,7 +36,7 @@ class Subscriber {
     this.id.split(' ').forEach(id => {
       let subs = events[id]
       if (subs.length > 1) {
-        subs.splice(subs.indexOf(fn), 1)
+        subs.splice(subs.indexOf(this.fn), 1)
       } else delete events[id]
     })
   }
