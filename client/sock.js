@@ -37,6 +37,8 @@ sock.disconnect = function() {
   }
 }
 
+sock.on = events.on
+
 let noop = Function.prototype
 let eventRE = /^([^\n]+)\n(.+)\n\n$/
 let offlineRE = /^(ENOENT|ECONNREFUSED)$/
