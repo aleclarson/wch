@@ -22,7 +22,7 @@ exports.emit = function(id, args) {
     if (fn) call(fn, args)
   } else {
     let subs = events[id]
-    if (subs) subs.forEach(fn => call(fn, args))
+    if (subs) subs.slice().forEach(fn => call(fn, args))
   }
 }
 
