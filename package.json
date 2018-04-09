@@ -15,5 +15,9 @@
     "unhandled": "aleclarson/unhandled#1.0.0",
     "uuid": "aleclarson/uuid#3.1.0",
     "yiss": "^0.1.0"
+  },
+  "devDependencies": {
+    "coffeescript": "^2.2.3",
+    "testpass": "^0.6.0"
   }
 }
