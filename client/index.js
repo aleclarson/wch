@@ -52,7 +52,6 @@ wch.stream = function(root, opts) {
 
   async function watch() {
     await sock.connect()
-    console.log('watch:', root, opts)
 
     // Rewatch on server restart.
     rewatcher = events.on('connect', () => {
@@ -67,7 +66,6 @@ wch.stream = function(root, opts) {
     })
     let {id} = await quest.json(req, {root, opts})
 
-    console.log('stream.id =>', id)
     return events.watch(id, (file) => {
       stream.push(file)
     })

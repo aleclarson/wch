@@ -47,7 +47,6 @@ api.POST('/watch', async (req, res) => {
   }
   let stream = wch.stream(root, opts)
   stream.on('data', (file) => {
-    log.pale_green('changed:', file.path)
     emitter.emit('watch', {
       id: stream.id,
       file,
