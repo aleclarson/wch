@@ -111,6 +111,7 @@ wch.start = function() {
     // Start the server.
     let serverPath = path.resolve(__dirname, '../server')
     let proc = cp.spawn('node', [serverPath], {
+      env: process.env,
       stdio: 'ignore',
       detached: true,
     }).on('error', (err) => {
