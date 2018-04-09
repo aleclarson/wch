@@ -109,7 +109,7 @@ wch.start = function() {
     fs.writeFile(LOG_PATH, '')
 
     // Start the server.
-    let serverPath = __dirname + '/server'
+    let serverPath = path.resolve(__dirname, '../server')
     let proc = cp.spawn('node', [serverPath], {
       stdio: 'ignore',
       detached: true,
