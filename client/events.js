@@ -26,6 +26,11 @@ exports.emit = function(id, args) {
   }
 }
 
+exports.clear = function() {
+  events = Object.create(null)
+  watched = Object.create(null)
+}
+
 class Subscriber {
   constructor(id, fn) {
     this.id = id
