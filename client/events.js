@@ -18,8 +18,9 @@ exports.watch = function(id, fn) {
 
 exports.emit = function(id, args) {
   if (id == 'watch') {
-    let fn = watched[id]
-    if (fn) call(fn, args)
+    let [event] = args
+    let fn = watched[event.id]
+    if (fn) fn(event.file)
   } else {
     let subs = events[id]
     if (subs) subs.slice().forEach(fn => call(fn, args))
