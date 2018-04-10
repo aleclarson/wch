@@ -19,18 +19,18 @@ let request = sock.request.bind(sock)
 
 // Watch a root.
 async function wch(root) {
-  if (!sock.connected)
-    throw notConnected()
+  if (!fs.exists(SOCK_PATH))
+    throw notStarted()
   let req = request('PUT', '/roots')
-  return quest.json(res, {root}).then(success)
+  return quest.json(req, {root}).then(success)
 }
 
 // Unwatch a root.
 wch.unwatch = async function(root) {
-  if (!sock.connected)
-    throw notConnected()
+  if (!fs.exists(SOCK_PATH))
+    throw notStarted()
   let req = request('DELETE', '/roots')
-  return quest.json(res, {root}).then(success)
+  return quest.json(req, {root}).then(success)
 }
 
 // Plugin events
@@ -95,7 +95,7 @@ wch.query = function(root, opts) {
 }
 
 wch.list = async function() {
-  if (!socket.connected) throw notConnected()
+  if (!fs.exists(SOCK_PATH)) throw notStarted()
   return (await sock.json('/roots')).roots
 }
 
@@ -178,8 +178,8 @@ function estream(err) {
   })
 }
 
-function notConnected() {
-  let err = Error('Not connected to wch')
+function notStarted() {
+  let err = Error('Run `wch start` first')
   err.code = 408
   return err
 }
