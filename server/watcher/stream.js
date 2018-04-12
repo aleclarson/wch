@@ -54,14 +54,14 @@ let roots = require('./roots')
 let query = require('./query')
 
 class WatchStream extends Readable {
-  constructor(root, opts) {
+  constructor(root, opts = {}) {
     super({
       read: noop, // Ignore backpressure.
       objectMode: true,
     })
     this.root = root
-    this.opts = opts || {}
-    if (opts && opts.clock != null) {
+    this.opts = opts
+    if (opts.clock != null) {
       this.clock = opts.clock
     }
   }
@@ -73,13 +73,25 @@ class WatchStream extends Readable {
     wm.watch(this.root).then(async (res) => {
       this.watch = res.watch == this.root ? null : res.watch
 
+      // Crawl the directory.
+      if (this.opts.crawl) {
+        let files = await query(this.root, this.opts)
+        files.forEach(file => {
+          file.path = path.join(this.root, file.name)
+          this.push(file)
+        })
+
+        this.clock = files.clock
+        delete this.opts.crawl
+      }
+
       // Fetch the current time if no clock is set.
       if (this.clock == null) {
         this.clock = (await wm.clock(res.watch)).clock
       }
 
       return wm.subscribe(res.watch, this.id, {
-        since: this.clock || 0,
+        since: this.clock,
         fields: this.opts.fields || ['name', 'exists', 'new'],
         expression: query.filter(this.opts),
         relative_root: res.relative_path || '',
