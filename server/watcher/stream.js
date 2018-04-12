@@ -1,4 +1,5 @@
 let {Readable} = require('readable-stream')
+let makeQuery = require('./query')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
@@ -50,9 +51,6 @@ wm.on('connect', () => {
 // stream -> roots -> stream
 let roots = require('./roots')
 
-// stream -> query -> roots -> stream
-let query = require('./query')
-
 class WatchStream extends Readable {
   constructor(root, opts = {}) {
     super({
@@ -63,6 +61,7 @@ class WatchStream extends Readable {
     this.opts = opts
     if (opts.clock != null) {
       this.clock = opts.clock
+      delete opts.clock
     }
   }
   _subscribe() {
@@ -73,29 +72,29 @@ class WatchStream extends Readable {
     wm.watch(this.root).then(async (res) => {
       this.watch = res.watch == this.root ? null : res.watch
 
+      let query = makeQuery({}, this.opts)
+      query.relative_root = res.relative_path || ''
+
       // Crawl the directory.
       if (this.opts.crawl) {
-        let files = await query(this.root, this.opts)
-        files.forEach(file => {
+        let q = await wm.query(res.watch, query)
+        this.clock = q.clock
+        q.files.forEach(file => {
           file.path = path.join(this.root, file.name)
           this.push(file)
         })
 
-        this.clock = files.clock
+        // Avoid crawling on reconnect.
         delete this.opts.crawl
       }
 
-      // Fetch the current time if no clock is set.
-      if (this.clock == null) {
+      // Ensure the `clock` property exists.
+      else if (this.clock == null) {
         this.clock = (await wm.clock(res.watch)).clock
       }
 
-      return wm.subscribe(res.watch, this.id, {
-        since: this.clock,
-        fields: this.opts.fields || ['name', 'exists', 'new'],
-        expression: query.filter(this.opts),
-        relative_root: res.relative_path || '',
-      })
+      query.since = this.clock
+      return wm.subscribe(res.watch, this.id, query)
     }).catch(err => {
       this.emit('error', err)
     })

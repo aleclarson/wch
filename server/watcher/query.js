@@ -1,77 +1,59 @@
-let path = require('path')
-let wm = require('./watchman')
 
-query.filter = filter
-module.exports = query
+// Default fields
+let fields = ['name', 'exists', 'new']
 
-// query -> roots -> stream -> query
-let roots = require('./roots')
+function makeQuery(query, opts) {
+  let expr = filter(opts)
 
-async function query(dir, opts = {}) {
-  // Support passing a subdirectory.
-  let root = await roots.find(dir)
-  if (!root) {
-    throw Error('Directory not being watched: ' + dir)
+  let kinds = opts.kind || opts.kinds || 'fl'
+  if (kinds !== '*') {
+    kinds = kinds.split('').map(kind => ['type', kind])
+    if (kinds.length == 1) kinds = kinds[0]
+    else kinds.unshift('anyof')
+    expr = and(kinds, expr)
   }
 
-  // Passing a custom query is possible.
-  let {query} = opts
-  if (!query) {
-    query = {
-      fields: opts.fields || ['name', 'exists', 'new'],
-      expression: and(filter(opts), [
-        'anyof', ['type', 'f'], ['type', 'l']
-      ]),
-    }
-  }
-
-  // Filter results to those changed after a given date.
-  if (opts.since) {
-    let {since} = opts
-    if (since.getTime) {
-      since = Math.round(since.getTime() / 1000)
-    } else {
-      throw TypeError('`since` must be a date')
-    }
-    query.since = since
-  }
-
-  let rel = path.relative(root, dir)
-  if (rel) query.relative_root = rel
+  // Remove results that haven't changed since the given date.
+  if (opts.since) query.since = since(opts.since)
 
   // Search a subset of descendants.
-  if (Array.isArray(opts.paths)) {
+  if (opts.paths) {
+    assert(Array.isArray(opts.paths), '`paths` must be an array')
     query.path = opts.paths
   }
 
-  // Send the query.
-  let res = await wm.query(root, query)
+  query.fields = opts.fields || fields
+  query.expression = expr
+  return query
+}
 
-  // Return the files, root, and clockspec.
-  let {files} = res
-  files.root = path.join(root, rel)
-  files.clock = res.clock
-  return files
+module.exports = makeQuery
+
+function since(date) {
+  // NOTE: Numbers must be in seconds!
+  if (typeof date == 'number') return date
+  if (date.getTime) {
+    return Math.round(date.getTime() / 1000)
+  }
+  throw TypeError('Expected a date or number')
 }
 
 function filter(opts) {
-  let expr
-  if (opts) {
-    let include, exclude
+  let expr, include, exclude
 
-    if (opts.include)
-      include = matchAny(opts.include)
+  if (opts.include)
+    include = matchAny(opts.include)
 
-    if (opts.exclude)
-      exclude = ['not', matchAny(opts.exclude)]
+  if (opts.exclude)
+    exclude = ['not', matchAny(opts.exclude)]
 
-    if (include && exclude) {
-      expr = ['allof', include, exclude]
-    } else expr = include || exclude
+  if (include && exclude) {
+    expr = ['allof', include, exclude]
+  } else expr = include || exclude
 
-    if (opts.exts)
-      expr = and(expr, suffix(opts.exts))
-  }
+  if (opts.exts)
+    expr = and(expr, suffix(opts.exts))
+
   return expr || 'true'
 }
 
