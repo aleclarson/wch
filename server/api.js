@@ -27,6 +27,15 @@ api.listen('PUT|DELETE', '/roots', async (req, res) => {
   return true
 })
 
+api.GET('/query', async (req, res) => {
+  let json = await req.json()
+  if (typeof json.root != 'string') {
+    res.set('Error', '`root` must be a string')
+    return 400
+  }
+  return wch.query(json.root, json.opts)
+})
+
 // Map clients to their watch streams.
 let clients = Object.create(null)
 
