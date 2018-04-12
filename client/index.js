@@ -34,7 +34,10 @@ wch.unwatch = async function(root) {
 }
 
 // Plugin events
-wch.on = events.on
+wch.on = function(evt, fn) {
+  sock.connect()
+  return events.on(evt, fn)
+}
 
 let noop = Function.prototype
 
