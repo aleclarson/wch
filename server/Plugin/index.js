@@ -59,6 +59,9 @@ class Plugin extends EventEmitter {
     stream.dir = dir
     stream.opts = opts
 
+    // Every root listens for the "close" event.
+    stream.setMaxListeners(0)
+
     if (this.streams) {
       this.streams.push(stream)
     } else this.streams = [stream]
