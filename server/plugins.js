@@ -68,16 +68,7 @@ exports.unload = function(root) {
       })
     }
   } else {
-    for (let name in pluginsByName) {
-      let plugin = pluginsByName[name]
-      if (plugin.remove) {
-        plugin.roots.forEach(root => {
-          plugin.remove(root)
-        })
-      }
-      plugin.roots.clear()
-      if (plugin.end) plugin.end()
-    }
+    for (let name in pluginsByName) stopPlugin(name)
     pluginsByName = Object.create(null)
     pluginsByRoot = Object.create(null)
   }
@@ -113,14 +104,21 @@ function runPlugin(name) {
   }
 }
 
-function unloadPlugin(name, root) {
+function stopPlugin(name, root) {
   let plugin = pluginsByName[name]
-  if (plugin.remove) plugin.remove(root)
-  plugin.roots.delete(root)
+  if (typeof root == 'string') {
+    plugin.remove(root)
+  } else {
+    plugin.roots.forEach(root => {
+      plugin.remove(root)
+    })
+    plugin.roots.clear()
+  }
   if (plugin.roots.size == 0) {
-    if (log.verbose)
-      log.pale_pink('Killing plugin:', name)
-    if (plugin.end) plugin.end()
+    if (log.verbose) {
+      log.pale_pink('Stopping plugin:', name)
+    }
+    plugin.stop()
     delete pluginsByName[name]
   }
 }
