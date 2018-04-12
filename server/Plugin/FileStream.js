@@ -54,12 +54,12 @@ class FileStream extends EventEmitter {
   }
   delete(fn = getPath) {
     assert.equal(typeof fn, 'function')
-    return this.each(function(file) {
-      if (!file) return
-      let dest = fn.call(this, file)
+    return this.each(function(...args) {
+      if (!args[0]) return
+      let dest = fn.apply(this, args)
       if (typeof dest == 'string') {
         fs.removeFile(dest, false)
-        return [dest, file]
+        return [dest].concat(args)
       }
     })
   }
