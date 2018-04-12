@@ -88,8 +88,14 @@ function runPlugin(name) {
       return log.red('PluginError:', `'${name}' failed to return` +
         ` an object with an 'add' method!`)
     }
-    plugin.roots = new Set()
-    if (plugin.run) plugin.run()
+    plugin.on('error', (err) => {
+      plugin.log(err.stack)
+      if (log.verbose) {
+        log.pale_pink('Stopping plugin:', name)
+      }
+      plugin.stop()
+    })
+    plugin.run()
     pluginsByName[name] = plugin
     return plugin
   }
