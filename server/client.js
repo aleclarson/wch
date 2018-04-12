@@ -17,6 +17,11 @@ wch.unwatch = function(root) {
   }
 }
 
+let Plugin = require('./Plugin')
+wch.plugin = function(name) {
+  return new Plugin(name)
+}
+
 // Plugin events
 wch.emit = emitter.emit
 wch.on = emitter.on
