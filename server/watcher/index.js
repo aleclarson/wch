@@ -20,9 +20,6 @@ module.exports = {
   unwatch: roots.remove,
   stream,
   query,
-  crawl() {
-    throw Error('Not implemented yet')
-  },
   stop() {
     if (log.verbose)
       log.pale_pink('Closing watch streams...')
