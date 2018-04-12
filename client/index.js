@@ -94,7 +94,8 @@ wch.stream = function(root, opts) {
 
 // File queries.
 wch.query = function(root, opts) {
-  throw Error('Not implemented yet')
+  let req = request('GET', '/query')
+  return quest.json(req, {root, opts})
 }
 
 wch.list = async function() {
