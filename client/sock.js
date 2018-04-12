@@ -1,5 +1,6 @@
 let events = require('./events')
 let quest = require('quest')
+let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
 let fs = require('fsx')
@@ -9,7 +10,6 @@ let {
   SOCK_PATH,
 } = require('../server/paths')
 
-let noop = Function.prototype
 let isTest = process.env.NODE_ENV == 'test'
 let eventRE = /^([^\n]+)\n(.+)\n\n$/
 let offlineRE = /^(ENOENT|ECONNREFUSED)$/

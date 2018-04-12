@@ -1,6 +1,7 @@
-let noop = Function.prototype
-let events = Object.create(null)
+let noop = require('noop')
+
 let watched = Object.create(null)
+let events = Object.create(null)
 
 exports.on = function(id, fn) {
   id.split(' ').forEach(id => {

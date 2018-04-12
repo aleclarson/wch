@@ -1,6 +1,7 @@
 let {Readable} = require('readable-stream')
 let events = require('./events')
 let quest = require('quest')
+let noop = require('noop')
 let path = require('path')
 let cp = require('child_process')
 let fs = require('fsx')
@@ -38,8 +39,6 @@ wch.on = function(evt, fn) {
   sock.connect()
   return events.on(evt, fn)
 }
-
-let noop = Function.prototype
 
 // File event streaming
 wch.stream = function(root, opts) {
