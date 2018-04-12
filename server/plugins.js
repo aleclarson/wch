@@ -38,7 +38,7 @@ exports.load = function(root) {
       // Handle deleted plugins.
       loaded.forEach(name => {
         if (!found.includes(name)) {
-          unloadPlugin(name, root)
+          stopPlugin(name, root)
         }
       })
       return true
@@ -59,7 +59,7 @@ exports.unload = function(root) {
       delete pluginsByRoot[root]
       loaded.forEach(name => {
         try {
-          unloadPlugin(name, root)
+          stopPlugin(name, root)
         } catch(err) {
           log.red('PluginError:', `'${name}' failed to unload root: ` + root)
           console.error(err.stack)
