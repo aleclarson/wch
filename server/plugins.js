@@ -28,7 +28,7 @@ exports.load = function(root) {
           let plugin = pluginsByName[name] || runPlugin(name)
           if (!plugin) return
           try {
-            plugin.add(root)
+            plugin.add(root, pack)
             loaded.push(name)
           } catch(err) {
             log.red('PluginError:', `'${name}' failed to add root: ` + root)
