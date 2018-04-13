@@ -5,12 +5,22 @@ let path = require('path')
 let uuid = require('uuid')
 let wm = require('./watchman')
 
+let debug = /\b(wch_stream)\b/.test(process.env.DEBUG)
+
 // Streams are not persisted between restarts.
 let streams = new Map()
 
 function stream(root, opts) {
   let stream = new WatchStream(root, opts)
-  return stream._subscribe()
+  let starting = stream._subscribe()
+  if (debug) {
+    console.log('create stream:', {
+      id: stream.id,
+      root: stream.root,
+      opts: stream.opts,
+    })
+  }
+  return starting
 }
 
 stream.get = function(id) {
@@ -37,8 +47,8 @@ wm.on('connect', () => {
       file.path = path.join(stream.root, file.name)
       stream.push(file)
     })
-  } else {
-    // Someone stopped our stream, so restart it.
+  } else { // Restart our stream if accidentally cancelled.
+    if (debug) console.log('restart stream:', stream.id)
     stream._subscribe()
   }
 })
@@ -96,6 +106,7 @@ class WatchStream extends Readable {
     return this
   }
   async _destroy(err, next) {
+    if (debug) console.log('destroy stream:', this.id)
     streams.delete(this.id)
     this.push(null)
     try {
