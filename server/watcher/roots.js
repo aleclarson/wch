@@ -16,10 +16,14 @@ let streams = new Map()
 module.exports = {
   async load() {
     if (!roots) {
+      let list = await wm.list()
       let saved = fs.isFile(jsonPath) ?
         JSON.parse(fs.readFile(jsonPath)) : []
-      roots = new Set(saved)
-      await Promise.all(saved.map(watchPackage))
+
+      // Remove unwatched roots (possibly due to reaping).
+      roots = new Set(saved.filter(root => list.includes(root)))
+      if (roots.size < saved.length) save()
+      roots.forEach(watchPlugins)
     }
   },
   has: (root) => roots.has(root),
@@ -27,7 +31,8 @@ module.exports = {
   async add(root) {
     if (!roots.has(root)) {
       roots.add(root)
-      await watchPackage(root)
+      await wm.watch(root)
+      watchPlugins(root)
       return save()
     }
   },
@@ -49,8 +54,8 @@ function save() {
   return true
 }
 
-async function watchPackage(root) {
-  await wm.watch(root)
+// Load plugins and watch for added/removed plugins.
+function watchPlugins(root) {
   plugins.load(root)
   streams.set(root, stream(root, {
     include: ['/package.json']
