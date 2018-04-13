@@ -103,7 +103,8 @@ class WatchStream extends Readable {
       if (roots.has(root)) {
         await wm.unsubscribe(root, this.id)
       } else {
-        await wm.unwatch(root)
+        // Ensure the root is unwatched.
+        await wm.unwatch(root).catch(noop)
       }
       next(err)
     } catch(err) {
