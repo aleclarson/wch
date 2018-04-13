@@ -3,7 +3,6 @@ let makeQuery = require('./query')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
-let log = require('../log')
 let wm = require('./watchman')
 
 // Streams are not persisted between restarts.
@@ -33,15 +32,11 @@ wm.on('connect', () => {
   let stream = streams.get(id)
   if (!stream) return
   if (!evt.canceled) {
-    try {
-      stream.clock = evt.clock
-      evt.files.forEach(file => {
-        file.path = path.join(stream.root, file.name)
-        stream.push(file)
-      })
-    } catch(err) {
-      log(err.stack)
-    }
+    stream.clock = evt.clock
+    evt.files.forEach(file => {
+      file.path = path.join(stream.root, file.name)
+      stream.push(file)
+    })
   } else {
     // Someone stopped our stream, so restart it.
     stream._subscribe()
