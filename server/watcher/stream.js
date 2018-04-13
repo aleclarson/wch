@@ -97,7 +97,6 @@ class WatchStream extends Readable {
   }
   async _destroy(err, next) {
     streams.delete(this.id)
-    this.push(null)
 
     // Unwatch only if we own the root.
     if (this.watch || roots.has(this.root)) {
