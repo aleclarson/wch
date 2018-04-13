@@ -14,7 +14,6 @@ module.exports = {
     await wm.connect()
     return roots.load()
   },
-  root: roots.find,
   list: roots.list,
   watch: roots.add,
   unwatch: roots.remove,

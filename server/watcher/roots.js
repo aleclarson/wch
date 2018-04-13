@@ -39,14 +39,6 @@ module.exports = {
       roots.delete(root)
       return save()
     }
-  },
-  find(dir) {
-    let root = dir
-    while (!roots.has(root)) {
-      if (root == '/') return null
-      root = path.dirname(root)
-    }
-    return root
   }
 }
 
