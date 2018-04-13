@@ -20,11 +20,7 @@ module.exports = {
   stream,
   query,
   stop() {
-    if (log.verbose)
-      log.pale_pink('Closing watch streams...')
-    stream.each(stream => {
-      stream.destroy()
-    })
+    stream.each(s => s.destroy())
   }
 }
 
@@ -34,7 +30,7 @@ async function query(dir, opts = {}) {
   let query = makeQuery({}, opts)
 
   // Find the actual root.
-  let root = findRoot(dir, (await wm.list(dir)).roots)
+  let root = findRoot(dir, (await wm.list()).roots)
   if (!root) throw Error('Cannot query an unwatched root: ' + dir)
 
   // Update the relative root.
