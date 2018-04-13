@@ -1,4 +1,4 @@
-# wch v0.5.2 
+# wch v0.5.3 
 
 File watching daemon w/ CLI
 
