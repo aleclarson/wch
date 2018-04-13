@@ -34,7 +34,7 @@ async function query(dir, opts = {}) {
   let query = makeQuery({}, opts)
 
   // Find the actual root.
-  let root = findRoot(dir, await wm.list(dir))
+  let root = findRoot(dir, (await wm.list(dir)).roots)
   if (!root) throw Error('Cannot query an unwatched root: ' + dir)
 
   // Update the relative root.

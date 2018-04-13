@@ -16,12 +16,12 @@ let streams = new Map()
 module.exports = {
   async load() {
     if (!roots) {
-      let list = await wm.list()
+      let watched = (await wm.list()).roots
       let saved = fs.isFile(jsonPath) ?
         JSON.parse(fs.readFile(jsonPath)) : []
 
       // Remove unwatched roots (possibly due to reaping).
-      roots = new Set(saved.filter(root => list.includes(root)))
+      roots = new Set(saved.filter(root => watched.includes(root)))
       if (roots.size < saved.length) save()
       roots.forEach(watchPlugins)
     }
