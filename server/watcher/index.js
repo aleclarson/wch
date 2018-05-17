@@ -5,7 +5,6 @@ let makeQuery = require('./query')
 let assert = require('assert')
 let noop = require('noop')
 let path = require('path')
-let log = require('../log')
 let fs = require('fsx')
 
 let {WCH_DIR} = require('../paths')

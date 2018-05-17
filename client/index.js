@@ -66,8 +66,8 @@ wch.stream = function(root, opts) {
     let req = request('POST', '/watch', {
       'x-client-id': sock.id,
     })
-    let {id} = await quest.json(req, {root, opts})
 
+    let {id} = await quest.json(req, {root, opts})
     return events.watch(id, (file) => {
       stream.push(file)
 

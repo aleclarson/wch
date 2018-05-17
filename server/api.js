@@ -110,14 +110,13 @@ api.GET('/events', (req, res) => {
   clients[clientId] = new Set()
 
   let stream = emitter.stream()
-    .on('error', (err) => console.error(err.stack))
-    .pipe(res).on('close', () => {
-      stream.destroy()
-      clients[clientId].forEach(stream => {
-        stream.destroy()
-      })
-      delete clients[clientId]
-    })
+  stream.on('error', (err) => {
+    console.error(err.stack)
+  }).pipe(res).on('close', () => {
+    stream.destroy()
+    clients[clientId].forEach(s => s.destroy())
+    delete clients[clientId]
+  })
 })
 
 api.POST('/stop', (req) => {

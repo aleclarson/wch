@@ -11,9 +11,7 @@ function emit(id, ...args) {
   if (all.length) all.forEach(fn => fn(id, args))
   if (streams.size) {
     let event = id + '\n' + JSON.stringify(args) + '\n\n'
-    streams.forEach(stream => {
-      stream.push(event)
-    })
+    streams.forEach(s => s.push(event))
   }
 }
 
