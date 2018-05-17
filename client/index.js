@@ -90,6 +90,9 @@ wch.stream = function(root, opts) {
       }
     } catch(e) {}
     done(err)
+
+    // 'readable-stream' does not emit "close" by default
+    process.nextTick(() => stream.emit('close'))
   }
   function fatal(err) {
     stream.destroy(err)

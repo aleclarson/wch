@@ -53,11 +53,18 @@ function remove(subs, fn) {
 function stream() {
   let stream = new Readable({
     read: noop, // No pulling
-  }).on('end', () => {
+    destroy,
+  }).on('close', () => {
     streams.delete(stream)
   })
   streams.add(stream)
   return stream
+}
+
+// 'readable-stream' does not emit "close" by default
+function destroy(err, done) {
+  done(err)
+  process.nextTick(() => this.emit('close'))
 }
 
 module.exports = {
