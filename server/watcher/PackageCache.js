@@ -1,6 +1,6 @@
 let noop = require('noop')
 let path = require('path')
-let wm = require('./socket')
+let wm = require('./commands')
 let fs = require('fsx')
 
 let {WCH_DIR} = require('../paths')

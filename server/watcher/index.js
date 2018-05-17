@@ -9,8 +9,8 @@ let fs = require('fsx')
 
 let {WCH_DIR} = require('../paths')
 
-// Watchman duplex stream
-let wm = require('./socket')
+// Watchman commands
+let wm = require('./commands')
 
 // Transient streams mapped to their identifiers.
 let streamsById = new Map()
@@ -55,30 +55,24 @@ module.exports = {
     await wm.connect()
     if (!watched) {
       watched = new PackageCache('watched.json')
-      await watched.load(watchPackage)
+      await watched.load(watch)
     }
   },
   async watch(root) {
     assert.equal(typeof root, 'string')
     if (!watched.has(root)) {
-      await watchPackage(root)
+      await watch(root)
       return true
     }
   },
-  async unwatch(root) {
-    assert.equal(typeof root, 'string')
-    if (watched.has(root)) {
-      await unwatchPackage(root)
-      return true
-    }
-  },
+  unwatch,
   getStream,
   stream: createStream,
   query,
   list: () => watched.list(),
 }
 
-async function watchPackage(root) {
+async function watch(root) {
   await wm.watch(root)
 
   let pack = watched.add(root)
@@ -104,14 +98,17 @@ async function watchPackage(root) {
   return pack
 }
 
-async function unwatchPackage(root) {
-  await wm.unwatch(root)
-
+async function unwatch(root) {
+  assert.equal(typeof root, 'string')
   let pack = watched.get(root)
-  watched.delete(root)
+  if (pack) {
+    await wm.unwatch(root)
+    watched.delete(root)
 
-  plugins.detach(pack)
-  pack._destroy()
+    plugins.detach(pack)
+    pack._destroy()
+    return true
+  }
 }
 
 function getStream(id) {

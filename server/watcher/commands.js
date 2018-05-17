@@ -2,21 +2,24 @@ let EventEmitter = require('events')
 let {Client} = require('fb-watchman')
 let noop = require('noop')
 let log = require('../log')
+let os = require('os')
 
+// Watchman client object
 let client = null
-let cmd = {
+
+// Preserve listeners between reconnect.
+let events = new EventEmitter()
+exports.on = events.on.bind(events)
+
+// Command functions
+commands({
   list: 'watch-list',
   watch: 'watch-project',
   query: null,
   clock: null,
   subscribe: null,
   unsubscribe: null,
-  unwatch: 'watch-del',
-}
-
-// Preserve listeners between reconnect.
-let events = new EventEmitter()
-exports.on = events.on.bind(events)
+})
 
 exports.connect = reconnect
 async function reconnect() {
@@ -65,9 +68,14 @@ function connect(resolve, reject) {
   })
 }
 
-Object.keys(cmd).forEach(key => {
-  let term = cmd[key] || key
-  exports[key] = function() {
+function commands(cmd) {
+  Object.keys(cmd).forEach(key => {
+    exports[key] = command(cmd[key] || key)
+  })
+}
+
+function command(term) {
+  return function() {
     let cmd = [term, ...arguments]
     return new Promise((resolve, reject) => {
       client.command(cmd, (err, res) => {
@@ -83,4 +91,4 @@ Object.keys(cmd).forEach(key => {
       })
     })
   }
-})
+}

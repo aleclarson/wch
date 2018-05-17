@@ -3,7 +3,7 @@ let makeQuery = require('./query')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
-let wm = require('./socket')
+let wm = require('./commands')
 
 class WatchStream extends Readable {
   constructor(dir, opts) {
