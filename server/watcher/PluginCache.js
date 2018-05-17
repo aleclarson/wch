@@ -138,7 +138,7 @@ class PluginCache {
   // Reconfigure a list of plugins for a package.
   _reloadPlugins(pack, list) {
     if (!list) list = this.byPack.get(pack)
-    list.forEach(id => {
+    list && list.forEach(id => {
       let plug = this.byName[id]
       detachPlugin(pack, plug, id)
       attachPlugin(pack, plug, id)
