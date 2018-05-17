@@ -134,7 +134,18 @@ function createStream(dir, opts = {}) {
     streamsByDir[dir] = streams
   }
 
-  stream.on('close', () => {
+  stream.on('error', (err) => {
+    if (/^resolve_projpath/.test(err.message)) {
+      // The watch root was deleted. 😧
+      stream.push({
+        name: '/',
+        path: stream.dir,
+        exists: false,
+      })
+    } else {
+      console.error(err)
+    }
+  }).on('close', () => {
     if (stream.destroyed) {
       streamsById.delete(stream.id)
 

@@ -70,6 +70,11 @@ wch.stream = function(root, opts) {
 
     return events.watch(id, (file) => {
       stream.push(file)
+
+      // The watch root was deleted!
+      if (file.name == '/') {
+        stream.destroy()
+      }
     })
   }
   function destroy(err, next) {
