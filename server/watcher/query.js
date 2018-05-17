@@ -16,12 +16,6 @@ function makeQuery(query, opts) {
   // Remove results that haven't changed since the given date.
   if (opts.since) query.since = since(opts.since)
 
-  // Search a subset of descendants.
-  if (opts.paths) {
-    assert(Array.isArray(opts.paths), '`paths` must be an array')
-    query.path = opts.paths
-  }
-
   query.fields = opts.fields || fields
   query.expression = expr
   return query
