@@ -38,7 +38,7 @@ wm.on('subscription', (evt) => {
   if (!evt.canceled) {
     stream.clock = evt.clock
     evt.files.forEach(file => {
-      file.path = path.join(stream.dir, file.name)
+      file.path = path.join(stream.path, file.name)
       stream.push(file)
     })
   } else {
@@ -118,7 +118,7 @@ function createStream(dir, opts = {}) {
       // The watch root was deleted. 😧
       stream.push({
         name: '/',
-        path: stream.dir,
+        path: stream.path,
         exists: false,
       })
     } else {

@@ -6,14 +6,14 @@ let uuid = require('uuid')
 let wm = require('./commands')
 
 class WatchStream extends Readable {
-  constructor(dir, opts) {
+  constructor(root, opts) {
     super({
       read: noop, // Ignore backpressure.
       objectMode: true,
       destroy,
     })
     this.id = uuid()
-    this.dir = dir
+    this.path = root
     this.opts = opts
     if (opts.clock != null) {
       this.clock = opts.clock
@@ -27,10 +27,7 @@ class WatchStream extends Readable {
     return this.promise.catch(fn)
   }
   _subscribe() {
-    let dir = this.dir
-    this.promise = wm.watch(dir).then(async (res) => {
-      this.root = res.watch
-
+    this.promise = wm.watch(this.path).then(async (res) => {
       let query = makeQuery({}, this.opts)
       query.relative_root = res.relative_path || ''
 
@@ -39,7 +36,7 @@ class WatchStream extends Readable {
         let q = await wm.query(res.watch, query)
         this.clock = q.clock
         q.files.forEach(file => {
-          file.path = path.join(dir, file.name)
+          file.path = path.join(this.path, file.name)
           this.push(file)
         })
 
