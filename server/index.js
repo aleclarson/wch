@@ -1,22 +1,19 @@
 require('./init')
 
 let watcher = require('./watcher')
-let plugins = require('./plugins')
 let slush = require('slush')
 let log = require('./log')
 let fs = require('fsx')
 
 let {SOCK_PATH} = require('./paths')
 
-process.on('exit', () => {
-  watcher.stop()
-  plugins.unload()
-  fs.removeFile(SOCK_PATH, false)
-})
-
 // Connect to watchman.
 let starting = watcher.start()
 starting.catch(onError)
+
+process.on('exit', () => {
+  fs.removeFile(SOCK_PATH, false)
+})
 
 // Start the API server.
 slush({

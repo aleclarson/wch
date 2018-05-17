@@ -1,34 +1,20 @@
+let Pipeline = require('./watcher/Pipeline')
 let emitter = require('./emitter')
-let plugins = require('./plugins')
 let log = require('./log')
-let _ = require('./watcher')
+let wm = require('./watcher')
 
-async function wch(root) {
-  if (await _.watch(root)) {
-    log.pale_green('Watching:', root)
-    return true
-  }
-}
+let wch = exports
 
-wch.unwatch = function(root) {
-  if (_.unwatch(root)) {
-    log.pale_green('Unwatched:', root)
-    return true
-  }
-}
-
-let Plugin = require('./Plugin')
-wch.plugin = function(name) {
-  return new Plugin(name)
-}
+wch.list = wm.list
+wch.query = wm.query
+wch.stream = wm.stream
 
 // Plugin events
 wch.emit = emitter.emit
 wch.on = emitter.on
 
-wch.list = _.list
-wch.query = _.query
-wch.stream = _.stream
-wch.log = log
+wch.pipeline = function() {
+  return new Pipeline()
+}
 
 module.exports = wch

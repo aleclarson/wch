@@ -48,12 +48,7 @@ function connect(resolve, reject) {
     }
   })
   .on('subscription', (res) => {
-    try {
-      events.emit('subscription', res)
-    } catch(err) {
-      // console.error(err.stack)
-      throw err
-    }
+    events.emit('subscription', res)
   })
   client.capabilityCheck({
     required: ['wildmatch', 'relative_root']

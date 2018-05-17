@@ -18,11 +18,13 @@ api.listen('PUT|DELETE', '/roots', async (req, res) => {
     return 400
   }
   if (req.method == 'PUT') {
-    let ok = await wch(json.root)
+    let ok = await watcher.watch(json.root)
     if (!ok) return {error: 'Already watching'}
+    log.pale_green('Watched:', json.root)
   } else {
-    let ok = wch.unwatch(json.root)
+    let ok = await watcher.unwatch(json.root)
     if (!ok) return {error: 'Not watching'}
+    log.pale_pink('Unwatched:', json.root)
   }
   return true
 })
@@ -54,16 +56,23 @@ api.POST('/watch', async (req, res) => {
     res.set('Error', '`root` must be a string')
     return 400
   }
+
   let stream = wch.stream(root, opts)
-  stream.on('data', (file) => {
-    emitter.emit('watch', {
-      id: stream.id,
-      file,
-    })
-  })
   stream.clientId = clientId
   clients[clientId].add(stream)
-  return {id: stream.id}
+  return stream.ready(() => {
+    if (stream.destroyed) return
+    stream.on('data', (file) => {
+      emitter.emit('watch', {
+        id: stream.id,
+        file,
+      })
+    })
+    return {id: stream.id}
+  }).catch(err => {
+    res.set('Error', err.message)
+    return 400
+  })
 })
 
 api.POST('/unwatch', async (req, res) => {
@@ -115,7 +124,6 @@ api.POST('/stop', (req) => {
   log.red('Shutting down...')
   setTimeout(() => {
     req.app.close()
-    watcher.stop()
   }, 100)
   return true
 })
