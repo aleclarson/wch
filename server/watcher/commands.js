@@ -1,6 +1,7 @@
 let EventEmitter = require('events')
 let {Client} = require('fb-watchman')
 let noop = require('noop')
+let path = require('path')
 let log = require('../log')
 let os = require('os')
 
@@ -11,9 +12,27 @@ let client = null
 let events = new EventEmitter()
 exports.on = events.on.bind(events)
 
-// Command functions
+let list = command('watch-list')
+exports.roots = async function() {
+  return (await list()).roots
+}
+
+// Find the watch root of a directory.
+exports.root = function(dir, roots) {
+  return roots ? findRoot(dir, roots)
+    : list().then(res => findRoot(dir, res.roots))
+}
+
+function findRoot(dir, roots) {
+  let home = os.homedir()
+  while (!roots.includes(dir)) {
+    if (dir == home) return null
+    dir = path.dirname(dir)
+  }
+  return dir
+}
+
 commands({
-  list: 'watch-list',
   watch: 'watch-project',
   query: null,
   clock: null,

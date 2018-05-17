@@ -13,10 +13,7 @@ let {WCH_DIR} = require('../paths')
 let wm = require('./commands')
 
 // Transient streams mapped to their identifiers.
-let streamsById = new Map()
-
-// Stream sets mapped to their directories.
-let streamsByDir = Object.create(null)
+let streams = new Map()
 
 // Watched roots are preserved within this cache.
 let watched = null
@@ -26,17 +23,17 @@ let plugins = new PluginCache()
 
 process.on('exit', () => {
   plugins.destroy()
-  streamsById.forEach(s => s.destroy())
+  streams.forEach(s => s.destroy())
 })
 
 wm.on('connect', () => {
   // Restart streams on reconnect.
-  streamsById.forEach(s => s._subscribe())
+  streams.forEach(s => s._subscribe())
 })
 
 wm.on('subscription', (evt) => {
   let id = evt.subscription
-  let stream = streamsById.get(id)
+  let stream = streams.get(id)
   if (!stream || stream.destroyed) return
   if (!evt.canceled) {
     stream.clock = evt.clock
@@ -66,7 +63,7 @@ module.exports = {
     }
   },
   unwatch,
-  getStream,
+  streams,
   stream: createStream,
   query,
   list: () => watched.list(),
@@ -102,17 +99,11 @@ async function unwatch(root) {
   assert.equal(typeof root, 'string')
   let pack = watched.get(root)
   if (pack) {
-    await wm.unwatch(root)
     watched.delete(root)
-
     plugins.detach(pack)
     pack._destroy()
     return true
   }
-}
-
-function getStream(id) {
-  return streamsById.get(id)
 }
 
 function createStream(dir, opts = {}) {
@@ -120,15 +111,7 @@ function createStream(dir, opts = {}) {
   assert.equal(typeof opts, 'object')
 
   let stream = new WatchStream(dir, opts)
-  streamsById.set(stream.id, stream)
-
-  let streams = streamsByDir[dir]
-  if (streams) {
-    streams.add(stream)
-  } else {
-    streams = new Set([stream])
-    streamsByDir[dir] = streams
-  }
+  streams.set(stream.id, stream)
 
   stream.on('error', (err) => {
     if (/^resolve_projpath/.test(err.message)) {
@@ -141,25 +124,15 @@ function createStream(dir, opts = {}) {
     } else {
       console.error(err)
     }
-  }).on('close', () => {
+  }).on('close', async () => {
     if (stream.destroyed) {
-      streamsById.delete(stream.id)
-
-      // Unwatch temporary roots if they haven't been
-      // consolidated and all dependent streams are closed.
-      streams.delete(stream)
-      if (streams.size == 0) {
-        delete streamsByDir[dir]
-        if (dir == stream.root && !watched.has(dir)) {
-          return fs.exists(dir) &&
-            wm.unwatch(dir).catch(console.error)
-        }
-      }
-
-      // TODO: Check if using `stream.root` works after consolidation.
+      streams.delete(stream.id)
       if (fs.exists(dir)) {
-        wm.unsubscribe(stream.root, stream.id)
-          .catch(console.error)
+        let root = await wm.root(dir)
+        if (root) {
+          wm.unsubscribe(root, stream.id)
+            .catch(console.error)
+        }
       }
     }
   })
@@ -172,7 +145,7 @@ async function query(dir, opts = {}) {
   let query = makeQuery({}, opts)
 
   // Find the actual root.
-  let root = findRoot(dir, (await wm.list()).roots)
+  let root = await wm.root(dir)
   if (!root) throw Error('Cannot query an unwatched root: ' + dir)
 
   // Update the relative root.
@@ -188,13 +161,4 @@ async function query(dir, opts = {}) {
   res.root = dir
   res.clock = q.clock
   return res
-}
-
-function findRoot(dir, roots) {
-  let root = dir
-  while (!roots.includes(root)) {
-    if (root == '/') return null
-    root = path.dirname(root)
-  }
-  return root
 }

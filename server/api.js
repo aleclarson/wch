@@ -94,7 +94,7 @@ api.POST('/unwatch', async (req, res) => {
     res.set('Error', '`id` must be a string')
     return 400
   }
-  let stream = watcher.getStream(id)
+  let stream = watcher.streams.get(id)
   if (stream) unwatch(stream)
   return 200
 })

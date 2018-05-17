@@ -14,30 +14,23 @@ function PackageCache(cacheName) {
     this.load = noop
     if (fs.isFile(cachePath)) {
       let cache = JSON.parse(fs.readFile(cachePath))
-      let {roots} = await wm.list()
 
-      // Watch roots must exist, be directories, and
-      // not be unwatched by the user or reaped by Watchman.
-      let count = 0
-      await Promise.all(cache.map(root => {
-        if (fs.isDir(root)) {
-          let dir = root
-          while (!roots.includes(dir)) {
-            if (dir == '/') return
-            dir = path.dirname(dir)
-          }
-          count++
-          return each(root)
+      // Synchronize our watch list with Watchman.
+      let count = 0, roots = await wm.roots()
+      await Promise.all(cache.map(dir => {
+        if (fs.exists(dir) && wm.root(dir, roots)) {
+          count += 1; return each(dir)
         }
       }))
 
+      // Set the `persist` function *after* loading to avoid needless writes.
       persist = function() {
         let cache = JSON.stringify(Object.keys(packs))
         fs.writeFile(cachePath, cache)
       }
-      if (count < cache.length) {
-        persist()
-      }
+
+      // Persist our watch list if any roots were removed.
+      if (count < cache.length) persist()
     }
   }
 
