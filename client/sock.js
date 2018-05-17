@@ -93,8 +93,13 @@ function connect(resolve, reject) {
   stream.setEncoding('utf8')
   stream.on('data', emit)
   function emit(event) {
-    let [id, args] = eventRE.exec(event).slice(1)
-    events.emit(id, JSON.parse(args))
+    let match = eventRE.exec(event)
+    if (match) {
+      let [id, args] = match.slice(1)
+      events.emit(id, JSON.parse(args))
+    } else {
+      console.warn(`Malformed event: '${event}'`)
+    }
   }
 
   stream.on('close', close)
