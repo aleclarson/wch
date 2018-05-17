@@ -48,8 +48,11 @@ api.GET('/query', async (req, res) => {
 let clients = Object.create(null)
 
 function unwatch(stream) {
-  clients[stream.clientId].delete(stream)
-  stream.destroy()
+  let streams = clients[stream.clientId]
+  if (streams) {
+    streams.delete(stream)
+    stream.destroy()
+  }
 }
 
 api.POST('/watch', async (req, res) => {
