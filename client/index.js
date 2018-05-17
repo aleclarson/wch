@@ -77,19 +77,19 @@ wch.stream = function(root, opts) {
       }
     })
   }
-  function destroy(err, next) {
-    this.push(null)
-    watching.then(watcher => {
+  async function destroy(err, done) {
+    if (rewatcher) rewatcher.dispose()
+    try {
+      let watcher = await watching
       watcher.dispose()
-      rewatcher.dispose()
       if (sock.connected) {
         let req = request('POST', '/unwatch')
         quest.send(req, {
           id: watcher.id,
-        }).end()
+        }).catch(noop)
       }
-      next(err)
-    })
+    } catch(e) {}
+    done(err)
   }
   function fatal(err) {
     stream.destroy(err)
