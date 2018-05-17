@@ -23,10 +23,11 @@ function makeQuery(query, opts) {
 
 module.exports = makeQuery
 
+// NOTE: Numbers must be in seconds!
 function since(date) {
-  // NOTE: Numbers must be in seconds!
-  if (typeof date == 'number') return date
-  if (date.getTime) {
+  if (typeof date !== 'object') {
+    return date
+  } else if (date.getTime) {
     return Math.round(date.getTime() / 1000)
   }
   throw TypeError('Expected a date or number')
