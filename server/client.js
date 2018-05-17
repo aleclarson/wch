@@ -1,11 +1,10 @@
 let Pipeline = require('./watcher/Pipeline')
 let emitter = require('./emitter')
-let log = require('./log')
 let wm = require('./watcher')
 
 let wch = exports
 
-wch.list = wm.list
+wch.list = require('./watcher').list
 wch.query = wm.query
 wch.stream = wm.stream
 
