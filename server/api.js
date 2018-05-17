@@ -47,6 +47,11 @@ api.GET('/query', async (req, res) => {
 // Map clients to their watch streams.
 let clients = Object.create(null)
 
+function unwatch(stream) {
+  clients[stream.clientId].delete(stream)
+  stream.destroy()
+}
+
 api.POST('/watch', async (req, res) => {
   let clientId = req.get('x-client-id')
   if (!clientId) {
@@ -73,6 +78,8 @@ api.POST('/watch', async (req, res) => {
         id: stream.id,
         file,
       })
+    }).on('close', () => {
+      unwatch(stream)
     })
     return {id: stream.id}
   }).catch(err => {
@@ -87,9 +94,8 @@ api.POST('/unwatch', async (req, res) => {
     res.set('Error', '`id` must be a string')
     return 400
   }
-  let stream = wch.stream.get(id)
-  clients[stream.clientId].delete(stream)
-  stream.destroy()
+  let stream = watcher.getStream(id)
+  if (stream) unwatch(stream)
   return 200
 })
 
