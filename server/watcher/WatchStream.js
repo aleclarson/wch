@@ -3,7 +3,7 @@ let makeQuery = require('./query')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
-let wm = require('./commands')
+let cmd = require('./commands')
 
 class WatchStream extends Readable {
   constructor(root, opts) {
@@ -27,13 +27,13 @@ class WatchStream extends Readable {
     return this.promise.catch(fn)
   }
   _subscribe() {
-    this.promise = wm.watch(this.path).then(async (res) => {
+    this.promise = cmd.watch(this.path).then(async (res) => {
       let query = makeQuery({}, this.opts)
       query.relative_root = res.relative_path || ''
 
       // Crawl the directory.
       if (this.opts.crawl && !this.crawled) {
-        let q = await wm.query(res.watch, query)
+        let q = await cmd.query(res.watch, query)
         this.clock = q.clock
         q.files.forEach(file => {
           file.path = path.join(this.path, file.name)
@@ -46,11 +46,11 @@ class WatchStream extends Readable {
 
       // Ensure the `clock` property exists.
       else if (this.clock == null) {
-        this.clock = (await wm.clock(res.watch)).clock
+        this.clock = (await cmd.clock(res.watch)).clock
       }
 
       query.since = this.clock
-      await wm.subscribe(res.watch, this.id, query)
+      await cmd.subscribe(res.watch, this.id, query)
     })
     return this
   }

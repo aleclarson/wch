@@ -2,6 +2,7 @@ let PackageCache = require('./PackageCache')
 let PluginCache = require('./PluginCache')
 let WatchStream = require('./WatchStream')
 let makeQuery = require('./query')
+let socket = require('./socket')
 let assert = require('assert')
 let noop = require('noop')
 let path = require('path')
@@ -10,7 +11,7 @@ let fs = require('fsx')
 let {WCH_DIR} = require('../paths')
 
 // Watchman commands
-let wm = require('./commands')
+let cmd = require('./commands')
 
 // Transient streams mapped to their identifiers.
 let streams = new Map()
@@ -26,12 +27,12 @@ process.on('exit', () => {
   streams.forEach(s => s.destroy())
 })
 
-wm.on('connect', () => {
+socket.on('connect', () => {
   // Restart streams on reconnect.
   streams.forEach(s => s._subscribe())
 })
 
-wm.on('subscription', (evt) => {
+socket.on('subscription', (evt) => {
   let id = evt.subscription
   let stream = streams.get(id)
   if (!stream || stream.destroyed) return
@@ -49,7 +50,7 @@ wm.on('subscription', (evt) => {
 
 module.exports = {
   async start() {
-    await wm.connect()
+    await socket.connect()
     if (!watched) {
       watched = new PackageCache('watched.json')
       await watched.load(watch)
@@ -70,7 +71,7 @@ module.exports = {
 }
 
 async function watch(root) {
-  await wm.watch(root)
+  await cmd.watch(root)
 
   let pack = watched.add(root)
   plugins.attach(pack)
@@ -128,9 +129,9 @@ function createStream(dir, opts = {}) {
     if (stream.destroyed) {
       streams.delete(stream.id)
       if (fs.exists(dir)) {
-        let root = await wm.root(dir)
+        let root = await cmd.root(dir)
         if (root) {
-          wm.unsubscribe(root, stream.id)
+          cmd.unsubscribe(root, stream.id)
             .catch(console.error)
         }
       }
@@ -145,7 +146,7 @@ async function query(dir, opts = {}) {
   let query = makeQuery({}, opts)
 
   // Find the actual root.
-  let root = await wm.root(dir)
+  let root = await cmd.root(dir)
   if (!root) throw Error('Cannot query an unwatched root: ' + dir)
 
   // Update the relative root.
@@ -154,7 +155,7 @@ async function query(dir, opts = {}) {
     path.join(path.relative(root, dir), rel)
 
   // Send the query.
-  let q = await wm.query(root, query)
+  let q = await cmd.query(root, query)
 
   // Return the files, root, and clockspec.
   let res = q.files

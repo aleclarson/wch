@@ -1,6 +1,6 @@
 let noop = require('noop')
 let path = require('path')
-let wm = require('./commands')
+let cmd = require('./commands')
 let fs = require('fsx')
 
 let {WCH_DIR} = require('../paths')
@@ -16,9 +16,9 @@ function PackageCache(cacheName) {
       let cache = JSON.parse(fs.readFile(cachePath))
 
       // Synchronize our watch list with Watchman.
-      let count = 0, roots = await wm.roots()
+      let count = 0, roots = await cmd.roots()
       await Promise.all(cache.map(dir => {
-        if (fs.exists(dir) && wm.root(dir, roots)) {
+        if (fs.exists(dir) && cmd.root(dir, roots)) {
           count += 1; return each(dir)
         }
       }))
