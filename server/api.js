@@ -83,7 +83,7 @@ api.POST('/watch', async (req, res) => {
       })
     }).on('close', () => {
       unwatch(stream)
-    })
+    }).on('error', console.error)
     return {id: stream.id}
   }).catch(err => {
     res.set('Error', err.message)

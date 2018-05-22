@@ -44,7 +44,6 @@ socket.on('subscription', (evt) => {
     })
   } else {
     stream._subscribe()
-      .catch(err => stream.destroy(err))
   }
 })
 

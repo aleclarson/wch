@@ -52,6 +52,7 @@ class WatchStream extends Readable {
       query.since = this.clock
       await cmd.subscribe(res.watch, this.id, query)
     })
+    this.promise.catch(err => this.destroy(err))
     return this
   }
 }
