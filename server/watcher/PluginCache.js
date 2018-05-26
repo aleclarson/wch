@@ -173,7 +173,7 @@ function proxyPackage(pack, plug) {
 }
 
 function createLog(name) {
-  let log = huey.log(huey.coal(`[${name}]`))
+  let log = huey.log(huey.coal(`[${name}]`), true)
   log.verbose = verbose
   return log
 }
