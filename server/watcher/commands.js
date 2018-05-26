@@ -1,7 +1,6 @@
 let socket = require('./socket')
 let path = require('path')
 let log = require('../log')
-let os = require('os')
 
 let list = command('watch-list')
 exports.roots = async function() {
@@ -15,9 +14,9 @@ exports.root = function(dir, roots) {
 }
 
 function findRoot(dir, roots) {
-  let home = os.homedir()
+  let base = /^[./]$/
   while (!roots.includes(dir)) {
-    if (dir == home) return null
+    if (base.test(dir)) return null
     dir = path.dirname(dir)
   }
   return dir
