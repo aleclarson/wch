@@ -18,7 +18,8 @@ function PackageCache(cacheName) {
       // Synchronize our watch list with Watchman.
       let count = 0, roots = await cmd.roots()
       await Promise.all(cache.map(dir => {
-        if (fs.exists(dir) && cmd.root(dir, roots)) {
+        let link = fs.realPath(dir)
+        if (fs.exists(link) && cmd.root(link, roots)) {
           count += 1; return each(dir)
         }
       }))

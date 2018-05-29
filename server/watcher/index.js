@@ -128,7 +128,7 @@ function createStream(dir, opts = {}) {
     if (stream.destroyed) {
       streams.delete(stream.id)
       if (fs.exists(dir)) {
-        let root = await cmd.root(dir)
+        let root = await cmd.root(fs.realPath(dir))
         if (root) {
           cmd.unsubscribe(root, stream.id)
             .catch(console.error)
@@ -142,16 +142,18 @@ function createStream(dir, opts = {}) {
 async function query(dir, opts = {}) {
   assert.equal(typeof dir, 'string')
   assert.equal(typeof opts, 'object')
+
+  let link = fs.realPath(dir)
   let query = makeQuery({}, opts)
 
   // Find the actual root.
-  let root = await cmd.root(dir)
+  let root = await cmd.root(link)
   if (!root) throw Error('Cannot query an unwatched root: ' + dir)
 
   // Update the relative root.
   let rel = opts.relative_root || ''
-  query.relative_root = dir == root ? rel :
-    path.join(path.relative(root, dir), rel)
+  query.relative_root = link == root ? rel :
+    path.join(path.relative(root, link), rel)
 
   // Send the query.
   let q = await cmd.query(root, query)
