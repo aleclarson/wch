@@ -118,6 +118,9 @@ async function unwatch(root) {
 function createStream(dir, opts = {}) {
   assert.equal(typeof dir, 'string')
   assert.equal(typeof opts, 'object')
+  if (!fs.exists(dir)) {
+    throw Error('Path does not exist: ' + dir)
+  }
 
   let stream = new WatchStream(dir, opts)
   streams.set(stream.id, stream)
