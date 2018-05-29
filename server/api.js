@@ -3,6 +3,7 @@ let watcher = require('./watcher')
 let Router = require('yiss')
 let wch = require('./client')
 let log = require('./log')
+let fs = require('fsx')
 
 let api = new Router()
 
@@ -68,6 +69,10 @@ api.POST('/watch', async (req, res) => {
   let {root, opts} = await req.json()
   if (typeof root != 'string') {
     res.set('Error', '`root` must be a string')
+    return 400
+  }
+  if (!fs.exists(root)) {
+    res.set('Error', '`root` does not exist')
     return 400
   }
 
