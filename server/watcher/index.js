@@ -42,8 +42,17 @@ socket.on('subscription', (evt) => {
       file.path = path.join(stream.path, file.name)
       stream.push(file)
     })
-  } else {
+  } else if (fs.isDir(stream.path)) {
+    // The user still has the stream open.
     stream._subscribe()
+  } else {
+    // The watch root was deleted. 😧
+    stream.push({
+      name: '/',
+      path: stream.path,
+      exists: false,
+    })
+    stream.destroy()
   }
 })
 
@@ -113,18 +122,8 @@ function createStream(dir, opts = {}) {
   let stream = new WatchStream(dir, opts)
   streams.set(stream.id, stream)
 
-  stream.on('error', (err) => {
-    if (/^resolve_projpath/.test(err.message)) {
-      // The watch root was deleted. 😧
-      stream.push({
-        name: '/',
-        path: stream.path,
-        exists: false,
-      })
-    } else {
-      console.error(err)
-    }
-  }).on('close', async () => {
+  return stream._subscribe()
+  .on('close', async () => {
     if (stream.destroyed) {
       streams.delete(stream.id)
       if (fs.exists(dir)) {
@@ -136,7 +135,6 @@ function createStream(dir, opts = {}) {
       }
     }
   })
-  return stream._subscribe()
 }
 
 async function query(dir, opts = {}) {
