@@ -13,8 +13,9 @@ function makeQuery(query, opts) {
     expr = and(kinds, expr)
   }
 
-  // Remove results that haven't changed since the given date.
-  if (opts.since) query.since = since(opts.since)
+  if (opts.since != null) {
+    query.since = since(opts.since)
+  }
 
   query.fields = opts.fields || fields
   query.expression = expr
@@ -28,7 +29,7 @@ function since(date) {
   if (typeof date !== 'object') {
     return date
   } else if (date.getTime) {
-    return Math.round(date.getTime() / 1000)
+    return Math.floor(date.getTime() / 1000)
   }
   throw TypeError('Expected a date or number')
 }

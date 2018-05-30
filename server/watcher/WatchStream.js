@@ -7,6 +7,9 @@ let cmd = require('./commands')
 
 class WatchStream extends Readable {
   constructor(root, opts) {
+    if (opts.crawl && opts.since != null) {
+      throw Error('Cannot define both `crawl` and `since` options')
+    }
     super({
       read: noop, // Ignore backpressure.
       objectMode: true,
@@ -15,10 +18,7 @@ class WatchStream extends Readable {
     this.id = uuid()
     this.path = root
     this.opts = opts
-    if (opts.clock != null) {
-      this.clock = opts.clock
-      delete opts.clock
-    }
+    this.clock = null
   }
   ready(fn) {
     return this.promise.then(fn)
@@ -34,22 +34,23 @@ class WatchStream extends Readable {
       // Crawl the directory.
       if (this.opts.crawl && !this.crawled) {
         let q = await cmd.query(res.watch, query)
-        this.clock = q.clock
         q.files.forEach(file => {
           file.path = path.join(this.path, file.name)
           this.push(file)
         })
 
+        // Stream changes after the query clock.
+        query.since = this.clock = q.clock
+
         // Avoid crawling on reconnect.
         this.crawled = true
       }
 
-      // Ensure the `clock` property exists.
-      else if (this.clock == null) {
-        this.clock = (await cmd.clock(res.watch)).clock
+      // Stream changes after now.
+      else if (query.since == null) {
+        query.since = Math.floor(Date.now() / 1000)
       }
 
-      query.since = this.clock
       await cmd.subscribe(res.watch, this.id, query)
     })
     this.promise.catch(err => this.destroy(err))
