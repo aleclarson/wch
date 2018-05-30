@@ -42,12 +42,17 @@ wch.on = function(evt, fn) {
 
 // File event streaming
 wch.stream = function(root, opts) {
+  if (opts && typeof opts.since == 'object') {
+    opts.since = Math.floor(opts.since.getTime() / 1000)
+  }
+
   let rewatcher = null
   let stream = new Readable({
     read: noop, // Push only
     objectMode: true,
     destroy,
   })
+
   let watching = watch()
   watching.catch(fatal)
   return stream
