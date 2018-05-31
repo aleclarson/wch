@@ -107,9 +107,9 @@ wch.stream = function(root, opts) {
 }
 
 // File queries.
-wch.query = function(root, opts) {
+wch.query = function(root, query) {
   let req = request('GET', '/query')
-  return quest.json(req, {root, opts})
+  return quest.json(req, {root, query})
 }
 
 wch.list = async function() {

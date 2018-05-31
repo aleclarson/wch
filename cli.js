@@ -118,9 +118,8 @@ function runAndWatch(root, cmd, args) {
   })
 
   wch.stream(root, {
-    exclude: [
-      '.git',
-      '.git/**',
+    skip: [
+      '.git/',
       '.*.sw[a-z]', '*~', // vim temporary files
       '.DS_Store',        // macOS Finder metadata
     ]

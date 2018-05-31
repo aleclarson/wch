@@ -6,8 +6,8 @@ let uuid = require('uuid')
 let cmd = require('./commands')
 
 class WatchStream extends Readable {
-  constructor(root, opts) {
-    if (opts.crawl && opts.since != null) {
+  constructor(root, query) {
+    if (query.crawl && query.since != null) {
       throw Error('Cannot define both `crawl` and `since` options')
     }
     super({
@@ -17,7 +17,7 @@ class WatchStream extends Readable {
     })
     this.id = uuid()
     this.path = root
-    this.opts = opts
+    this.query = query
     this.clock = null
   }
   ready(fn) {
@@ -28,11 +28,11 @@ class WatchStream extends Readable {
   }
   _subscribe() {
     this.promise = cmd.watch(this.path).then(async (res) => {
-      let query = makeQuery({}, this.opts)
+      let query = makeQuery(this.query)
       query.relative_root = res.relative_path || ''
 
       // Crawl the directory.
-      if (this.opts.crawl && !this.crawled) {
+      if (this.query.crawl && !this.crawled) {
         let q = await cmd.query(res.watch, query)
         q.files.forEach(file => {
           file.path = path.join(this.path, file.name)

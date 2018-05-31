@@ -2,24 +2,31 @@
 // Default fields
 let fields = ['name', 'exists', 'new']
 
-function makeQuery(query, opts) {
-  let expr = filter(opts)
+function makeQuery(opts) {
+  if (Array.isArray(opts)) {
+    return {expression: opts}
+  } else {
+    let expr = opts.expr
+      ? and(filter(opts), opts.expr)
+      : filter(opts)
 
-  let kinds = opts.kind || opts.kinds || 'fl'
-  if (kinds !== '*') {
-    kinds = kinds.split('').map(kind => ['type', kind])
-    if (kinds.length == 1) kinds = kinds[0]
-    else kinds.unshift('anyof')
-    expr = and(kinds, expr)
+    let type = opts.type || '*'
+    if (type !== '*') {
+      type = type.split('').map(type => ['type', type])
+      if (type.length == 1) type = type[0]
+      else type.unshift('anyof')
+      expr = and(expr, type)
+    }
+
+    let query = {
+      fields: opts.fields || fields,
+      expression: expr || 'true',
+    }
+    if (opts.since != null) {
+      query.since = since(opts.since)
+    }
+    return query
   }
-
-  if (opts.since != null) {
-    query.since = since(opts.since)
-  }
-
-  query.fields = opts.fields || fields
-  query.expression = expr
-  return query
 }
 
 module.exports = makeQuery
@@ -35,22 +42,22 @@ function since(date) {
 }
 
 function filter(opts) {
-  let expr, include, exclude
+  let expr, only, skip
 
-  if (opts.include)
-    include = matchAny(opts.include)
+  if (opts.only)
+    only = matchAny(opts.only)
 
-  if (opts.exclude)
-    exclude = ['not', matchAny(opts.exclude)]
+  if (opts.skip)
+    skip = ['not', matchAny(opts.skip)]
 
-  if (include && exclude) {
-    expr = ['allof', include, exclude]
-  } else expr = include || exclude
+  if (only && skip) {
+    expr = ['allof', only, skip]
+  } else expr = only || skip
 
   if (opts.exts)
     expr = and(expr, suffix(opts.exts))
 
-  return expr || 'true'
+  return expr
 }
 
 function matchAny(globs) {
@@ -70,10 +77,19 @@ function match(glob) {
   if (typeof glob != 'string') {
     throw TypeError('`glob` must be a string')
   }
-  return [
-    'match', glob[0] == '/' ? glob.slice(1) : glob,
-    ~glob.indexOf('/') ? 'wholename' : 'basename'
-  ]
+  if (glob.indexOf('/') == -1) {
+    return ['match', glob, 'basename']
+  }
+  if (glob[0] == '/') {
+    glob = glob.slice(1)
+  }
+  else if (glob[0] != '*') {
+    glob = '**/' + glob
+  }
+  if (glob.slice(-1) == '/') {
+    glob += '**'
+  }
+  return ['match', glob, 'wholename']
 }
 
 function suffix(exts) {

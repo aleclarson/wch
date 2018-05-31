@@ -86,7 +86,7 @@ async function watch(root) {
 
   // Watch package configuration for changes.
   pack.stream({
-    include: ['/package.json', '/project.js', '/project.coffee']
+    only: ['/package.json', '/project.js', '/project.coffee']
   }).on('data', (file) => {
     if (file.name != 'package.json') {
       plugins.reload(pack)
@@ -115,14 +115,15 @@ async function unwatch(root) {
   }
 }
 
-function createStream(dir, opts = {}) {
+function createStream(dir, query = {}) {
   assert.equal(typeof dir, 'string')
-  assert.equal(typeof opts, 'object')
   if (!fs.exists(dir)) {
     throw Error('Path does not exist: ' + dir)
   }
+  assert.equal(typeof query, 'object')
+  if (!query.type) query.type = 'fl'
 
-  let stream = new WatchStream(dir, opts)
+  let stream = new WatchStream(dir, query)
   streams.set(stream.id, stream)
 
   return stream._subscribe()
@@ -140,19 +141,20 @@ function createStream(dir, opts = {}) {
   })
 }
 
-async function query(dir, opts = {}) {
+async function query(dir, query = {}) {
   assert.equal(typeof dir, 'string')
-  assert.equal(typeof opts, 'object')
+  assert.equal(typeof query, 'object')
+  if (!query.type) query.type = 'fl'
 
   let link = fs.realPath(dir)
-  let query = makeQuery({}, opts)
+  query = makeQuery(query)
 
   // Find the actual root.
   let root = await cmd.root(link)
   if (!root) throw Error('Cannot query an unwatched root: ' + dir)
 
   // Update the relative root.
-  let rel = opts.relative_root || ''
+  let rel = query.relative_root || ''
   query.relative_root = link == root ? rel :
     path.join(path.relative(root, link), rel)
 

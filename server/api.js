@@ -36,7 +36,7 @@ api.GET('/query', async (req, res) => {
     res.set('Error', '`root` must be a string')
     return 400
   }
-  return wch.query(json.root, json.opts).then(files => {
+  return wch.query(json.root, json.query).then(files => {
     let {root, clock} = files
     return {files, root, clock}
   }, (err) => {
