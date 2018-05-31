@@ -56,6 +56,9 @@ function unwatch(stream) {
   }
 }
 
+// Watchman errors to be ignored.
+const quietErrorRE = /^(resolve_projpath):/
+
 api.POST('/watch', async (req, res) => {
   let clientId = req.get('x-client-id')
   if (!clientId) {
@@ -79,16 +82,26 @@ api.POST('/watch', async (req, res) => {
   let stream = wch.stream(root, opts)
   stream.clientId = clientId
   clients[clientId].add(stream)
+
+  stream.on('error', (err) => {
+    if (!stream.destroyed) stream.destroy()
+    if (!quietErrorRE.test(err.message)) {
+      console.error(err)
+    }
+  }).on('close', () => {
+    unwatch(stream)
+  })
+
   return stream.ready(() => {
-    if (stream.destroyed) return
+    if (stream.destroyed) {
+      return 204
+    }
     stream.on('data', (file) => {
       emitter.emit('watch', {
         id: stream.id,
         file,
       })
-    }).on('close', () => {
-      unwatch(stream)
-    }).on('error', console.error)
+    })
     return {id: stream.id}
   }).catch(err => {
     res.set('Error', err.message)
