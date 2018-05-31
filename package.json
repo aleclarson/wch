@@ -1,6 +1,6 @@
 {
   "name": "wch",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "main": "./client",
   "description": "Extensible path watcher (client/daemon)",
   "repository": "https://github.com/aleclarson/wch.git",
