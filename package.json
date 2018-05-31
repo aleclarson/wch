@@ -24,7 +24,7 @@
     "yiss": "^0.1.0"
   },
   "devDependencies": {
-    "coffeescript": "^2.2.3",
+    "coffeescript": "^2.3.0",
     "testpass": "^0.9.1"
   }
 }
