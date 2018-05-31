@@ -2,6 +2,9 @@
   "name": "wch",
   "version": "0.6.2",
   "main": "./client",
+  "description": "Extensible path watcher (client/daemon)",
+  "repository": "https://github.com/aleclarson/wch.git",
+  "license": "MIT",
   "bin": {
     "wch": "./cli.js"
   },
@@ -20,9 +23,5 @@
   "devDependencies": {
     "coffeescript": "^2.2.3",
     "testpass": "^0.6.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aleclarson/wch"
   }
 }
