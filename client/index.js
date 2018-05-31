@@ -100,7 +100,9 @@ wch.stream = function(root, opts) {
     process.nextTick(() => stream.emit('close'))
   }
   function fatal(err) {
-    stream.destroy(err)
+    if (!stream.destroyed) {
+      stream.destroy(err)
+    }
   }
 }
 
