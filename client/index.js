@@ -112,6 +112,11 @@ wch.query = function(root, query) {
   return quest.json(req, {root, query})
 }
 
+let makeQuery = require('../server/watcher/query')
+wch.expr = function(query) {
+  return makeQuery(query).expression
+}
+
 wch.list = async function() {
   if (!fs.exists(SOCK_PATH)) throw notStarted()
   return (await sock.json('/roots')).roots
