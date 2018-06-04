@@ -19,6 +19,7 @@
     "readable-stream": "^2.3.6",
     "slurm": "^0.3.0",
     "slush": "aleclarson/slush#3.2.0",
+    "socket-events": "^1.1.1",
     "unhandled": "aleclarson/unhandled#1.0.0",
     "uuid": "aleclarson/uuid#3.1.0",
     "yiss": "^0.1.0"

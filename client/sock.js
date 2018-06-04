@@ -3,6 +3,7 @@ let quest = require('quest')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
+let se = require('socket-events')
 let fs = require('fsx')
 
 let {
@@ -11,7 +12,6 @@ let {
 } = require('../server/paths')
 
 let isTest = process.env.NODE_ENV == 'test'
-let eventRE = /^([^\n]+)\n(.+)\n\n$/
 let offlineRE = /^(ENOENT|ECONNREFUSED)$/
 let SOCK_NAME = path.relative(WCH_DIR, SOCK_PATH)
 
@@ -90,17 +90,7 @@ function connect(resolve, reject) {
     events.emit('connect')
   }
 
-  stream.setEncoding('utf8')
-  stream.on('data', emit)
-  function emit(event) {
-    let match = eventRE.exec(event)
-    if (match) {
-      let [id, args] = match.slice(1)
-      events.emit(id, JSON.parse(args))
-    } else {
-      console.warn(`Malformed event: '${event}'`)
-    }
-  }
+  stream.on('data', se.decoder(events))
 
   stream.on('close', close)
   function close() {
@@ -135,7 +125,7 @@ function connect(resolve, reject) {
         }
       }
     } else {
-      events.emit('error', [err])
+      events.emit('error', err)
     }
   }
 

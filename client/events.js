@@ -17,14 +17,27 @@ exports.watch = function(id, fn) {
   return new Watcher(id)
 }
 
-exports.emit = function(id, args) {
+exports.emit = function(id, $1, $2) {
   if (id == 'watch') {
-    let [event] = args
-    let fn = watched[event.id]
-    if (fn) fn(event.file)
+    let fn = watched[$1.id]
+    if (fn) fn($1.file)
   } else {
     let subs = events[id]
-    if (subs) subs.slice().forEach(fn => call(fn, args))
+    if (subs) {
+      subs = subs.slice()
+      let i = -1, len = subs.length
+      switch (arguments.length) {
+        case 1:
+          for (;i < len; i++) subs[i]()
+          break
+        case 2:
+          for (;i < len; i++) subs[i]($1)
+          break
+        default:
+          for (;i < len; i++) subs[i]($1, $2)
+          break
+      }
+    }
   }
 }
 
@@ -56,14 +69,5 @@ class Watcher {
   dispose() {
     this.dispose = noop
     delete watched[this.id]
-  }
-}
-
-function call(fn, args) {
-  if (!args) return fn()
-  switch (args.length) {
-    case 1: return fn(args[0])
-    case 2: return fn(args[0], args[1])
-    default: return fn(...args)
   }
 }

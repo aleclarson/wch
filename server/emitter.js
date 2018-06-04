@@ -1,54 +1,21 @@
 let {Readable} = require('readable-stream')
 let noop = require('noop')
+let se = require('socket-events')
 
 let streams = new Set()
-let events = Object.create(null)
-let all = []
+let events = se.events()
 
-function emit(id, ...args) {
-  let subs = events[id]
-  if (subs) subs.forEach(fn => fn(...args))
-  if (all.length) all.forEach(fn => fn(id, args))
+let emit = events.emit.bind(events)
+events.emit = function(name, data) {
+  emit(name, data)
+  emit('*', name, data)
   if (streams.size) {
-    let event = id + '\n' + JSON.stringify(args) + '\n\n'
+    let event = se.encode(name, data)
     streams.forEach(s => s.push(event))
   }
 }
 
-function on(id, fn) {
-  if (id == '*') {
-    all.push(fn)
-  } else {
-    id.split(' ').forEach(id => {
-      let subs = events[id]
-      if (!subs) events[id] = [fn]
-      else subs.push(fn)
-    })
-  }
-  return () => off(id, fn)
-}
-
-function off(id, fn) {
-  if (id == '*') {
-    remove(all, fn)
-  } else {
-    id.split(' ').forEach(id => {
-      let subs = events[id]
-      if (subs) {
-        remove(subs, fn)
-        if (!subs.length)
-          delete events[id]
-      }
-    })
-  }
-}
-
-function remove(subs, fn) {
-  let idx = subs.indexOf(fn)
-  if (idx >= 0) subs.splice(idx, 1)
-}
-
-function stream() {
+events.stream = function() {
   let stream = new Readable({
     read: noop, // No pulling
     destroy,
@@ -65,6 +32,4 @@ function destroy(err, done) {
   process.nextTick(() => this.emit('close'))
 }
 
-module.exports = {
-  emit, on, off, stream,
-}
+module.exports = events
