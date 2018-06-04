@@ -1,4 +1,4 @@
-# wch v0.7.0 
+# wch v0.7.1 
 
 Extensible file watcher (client/daemon)
 
