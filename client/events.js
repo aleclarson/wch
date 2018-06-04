@@ -17,6 +17,11 @@ exports.watch = function(id, fn) {
   return new Watcher(id)
 }
 
+exports.count = function(id) {
+  let subs = events[id]
+  return subs ? subs.length : 0
+}
+
 exports.emit = function(id, $1, $2) {
   if (id == 'watch') {
     let fn = watched[$1.id]
