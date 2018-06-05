@@ -5,6 +5,11 @@
   "description": "Extensible path watcher (client/daemon)",
   "repository": "https://github.com/aleclarson/wch.git",
   "license": "MIT",
+  "files": [
+    "cli.js",
+    "client",
+    "server"
+  ],
   "bin": {
     "wch": "./cli.js"
   },
