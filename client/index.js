@@ -73,7 +73,7 @@ wch.stream = function(root, opts) {
     })
 
     let {id} = await quest.json(req, {root, opts})
-    return events.watch(id, (file) => {
+    return events.on(id, (file) => {
       stream.push(file)
 
       // The watch root was deleted!

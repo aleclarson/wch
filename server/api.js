@@ -97,10 +97,7 @@ api.POST('/watch', async (req, res) => {
       return 204
     }
     stream.on('data', (file) => {
-      emitter.emit('watch', {
-        id: stream.id,
-        file,
-      })
+      emitter.emit(stream.id, file)
     })
     return {id: stream.id}
   }).catch(err => {
