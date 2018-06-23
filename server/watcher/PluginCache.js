@@ -85,10 +85,16 @@ class PluginCache {
   }
   // Load configuration for a package.
   _loadProject(pack) {
-    let loadPath = pack.path + '/project.js'
-    if (!fs.exists(loadPath)) {
-      loadPath = pack.path + '/project.coffee'
-      if (fs.exists(loadPath)) {
+    let loadPath = checkFiles([
+      path.join(pack.path, 'wch.config.js'),
+      path.join(pack.path, 'project.js'),
+    ])
+    if (!loadPath) {
+      loadPath = checkFiles([
+        path.join(pack.path, 'wch.config.coffee'),
+        path.join(pack.path, 'project.coffee'),
+      ])
+      if (loadPath) {
         var coffee = true
       } else {
         return false
@@ -165,6 +171,16 @@ class PluginCache {
 }
 
 module.exports = PluginCache
+
+// Return the first existing file path.
+function checkFiles(files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    if (fs.isFile(file)) {
+      return file
+    }
+  }
+}
 
 function proxyPackage(pack, plug) {
   if (plug.methods)
