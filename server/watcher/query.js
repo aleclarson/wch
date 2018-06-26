@@ -44,10 +44,10 @@ function since(date) {
 function filter(opts) {
   let expr, only, skip
 
-  if (opts.only)
+  if (opts.only && opts.only.length)
     only = matchAny(opts.only)
 
-  if (opts.skip)
+  if (opts.skip && opts.skip.length)
     skip = ['not', matchAny(opts.skip)]
 
   if (only && skip) {
