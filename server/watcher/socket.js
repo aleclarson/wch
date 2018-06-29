@@ -19,14 +19,14 @@ socket.command = function() {
 }
 
 function connect(resolve, reject) {
-  log.coal('Connecting to watchman...')
+  log(log.coal('Connecting to watchman...'))
   let client = new watchman.Client()
   client.on('connect', () => {
-    log.pale_green('Connected to watchman!')
+    log(log.lgreen('Connected to watchman!'))
     socket.command = client.command.bind(client)
   })
   .on('end', () => {
-    log.pale_red('Lost connection to watchman!')
+    log(log.lred('Lost connection to watchman!'))
     if (client.connecting) {
       // TODO: Try again later.
       reject(Error('Failed to connect'))
@@ -50,8 +50,8 @@ function connect(resolve, reject) {
   }, async (err, res) => {
     if (err) {
       log()
-      log.red('Unsupported watchman version: ', res.version)
-      log.cyan('  brew upgrade', 'watchman')
+      log(log.red('Unsupported watchman version: '), res.version)
+      log(log.cyan('  brew upgrade'), 'watchman')
       log()
       reject(err)
     } else {

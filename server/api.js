@@ -21,11 +21,11 @@ api.listen('PUT|DELETE', '/roots', async (req, res) => {
   if (req.method == 'PUT') {
     let ok = await watcher.watch(json.root)
     if (!ok) return {error: 'Already watching'}
-    log.pale_green('Watched:', json.root)
+    log(log.lgreen('Watched:'), json.root)
   } else {
     let ok = await watcher.unwatch(json.root)
     if (!ok) return {error: 'Not watching'}
-    log.pale_pink('Unwatched:', json.root)
+    log(log.lpink('Unwatched:'), json.root)
   }
   return true
 })
@@ -150,7 +150,7 @@ api.GET('/events', (req, res) => {
 })
 
 api.POST('/stop', (req) => {
-  log.red('Shutting down...')
+  log(log.red('Shutting down...'))
   setTimeout(() => {
     req.app.close()
   }, 100)

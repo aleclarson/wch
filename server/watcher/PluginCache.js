@@ -2,12 +2,11 @@ let cleanStack = require('clean-stack')
 let Module = require('module')
 let assert = require('assert')
 let path = require('path')
-let huey = require('huey')
 let log = require('../log')
 let fs = require('fsx')
 let vm = require('vm')
 
-let {verbose} = log
+let debug = log.debug('wch:PluginCache')
 
 class PluginCache {
   constructor() {
@@ -106,8 +105,8 @@ class PluginCache {
       try {
         coffee = require('coffeescript')
       } catch(err) {
-        let cmd = huey.green('npm install -g coffeescript')
-        log.yellow('warn:', `You must do ${cmd} before any 'project.coffee' files can be loaded!`)
+        let cmd = log.green('npm install -g coffeescript')
+        log.warn(`You must do ${cmd} before any 'project.coffee' files can be loaded!`)
         return false
       }
       load = coffee.compile(load, {
@@ -138,7 +137,7 @@ class PluginCache {
         timeout: 10000, // 10s
       })
     } catch(err) {
-      console.log(cleanStack(err.stack, {pretty: true}))
+      log(cleanStack(err.stack, {pretty: true}))
     }
   }
   // Reconfigure a list of plugins for a package.
@@ -189,15 +188,11 @@ function proxyPackage(pack, plug) {
 }
 
 function createLog(name) {
-  let log = huey.log(huey.coal(`[${name}]`), true)
-  log.verbose = verbose
-  return log
+  return log.create().prefix(log.coal(`[${name}]`))
 }
 
 function runPlugin(id) {
-  if (log.verbose) {
-    log.pale_yellow('Running plugin:', id)
-  }
+  debug('Running plugin:', id)
   let runPath = require.resolve(id)
   try {
     let run = require(runPath)
@@ -212,7 +207,7 @@ function runPlugin(id) {
     return plug
   }
   catch(err) {
-    log.yellow('warn:', `'${id}' threw while starting up`)
+    log.warn(`'${id}' threw while starting up`)
     console.error(err.stack)
   }
 }
@@ -224,7 +219,7 @@ function attachPlugin(pack, plug, id) {
     try {
       plug.attach(proxy)
     } catch(err) {
-      log.yellow('warn:', `'${id}' threw while attaching a package`)
+      log.warn(`'${id}' threw while attaching a package`)
       console.error(err.stack)
     }
   }
@@ -238,20 +233,18 @@ function detachPlugin(pack, plug, id) {
     try {
       plug.detach(proxy)
     } catch(err) {
-      log.yellow('warn:', `'${id}' threw while detaching a package`)
+      log.warn(`'${id}' threw while detaching a package`)
       console.error(err.stack)
     }
   }
 }
 
 function stopPlugin(plug, id) {
-  if (log.verbose) {
-    log.pale_pink('Stopping plugin:', id)
-  }
+  debug('Stopping plugin:', id)
   try {
     if (plug.stop) plug.stop()
   } catch(err) {
-    log.yellow('warn:', `'${id}' threw while stopping`)
+    log.warn(`'${id}' threw while stopping`)
     console.error(err.stack)
   }
 }

@@ -65,7 +65,7 @@ Package.prototype = new Proxy({
         this._meta = JSON.parse(meta)
         return true
       } catch(err) {
-        log.yellow('warn:', `Failed to read 'package.json' in '${this.path}'`)
+        log.warn(`Failed to read 'package.json' in '${this.path}'`)
         console.error(err.stack)
       }
     }

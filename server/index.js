@@ -23,7 +23,7 @@ slush({
 .on('close', process.exit)
 .on('error', onError)
 .ready(() => {
-  log.pale_green('Server ready!')
+  log(log.lgreen('Server ready!'))
   starting.then(() => {
     fs.touch(SOCK_PATH)
   }).catch(onError)

@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
 let slurm = require('slurm')
-let huey = require('huey')
 let path = require('path')
+let log = require('lodge')
 let wch = require('.')
-
-let {log} = console
 
 let args = process.argv
 process.env.VERBOSE = args.includes('-v') ? '1' : ''
@@ -155,11 +153,11 @@ function runAndWatch(root, cmd, args) {
 }
 
 function good(label, ...args) {
-  log(huey.pale_green(label), ...args)
+  log(log.lgreen(label), ...args)
 }
 
 function warn(msg, ...args) {
-  console.warn(huey.pale_yellow(msg), ...args)
+  console.warn(log.lyellow(msg), ...args)
 }
 
 function fatal(err) {
@@ -170,11 +168,11 @@ function fatal(err) {
     }
     console.error(err.stack)
   } else if (typeof err == 'string') {
-    console.error(huey.red('Error: ') + err)
+    console.error(log.red('Error: ') + err)
   } else {
-    console.error(huey.red(err.name + ': ') + err.message)
+    console.error(log.red(err.name + ': ') + err.message)
     if (err.code == 500) {
-      log('Run ' + huey.cyan('wch logs') + ' for the stack trace.')
+      log('Run', log.cyan('wch logs'), 'for the stack trace.')
       log()
       warn('Please file an issue at:', 'https://goo.gl/GgBmdC')
     }

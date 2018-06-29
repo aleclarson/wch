@@ -46,7 +46,7 @@ function command(term) {
           reject(err)
         } else {
           if ('warning' in res) {
-            log.yellow('warn:', res.warning)
+            log.warn(res.warning)
           }
           resolve(res)
         }
