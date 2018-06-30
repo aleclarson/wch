@@ -66,11 +66,22 @@ switch(cmd) {
       u: {list: true},
       x: {rest: true},
       v: true,
+      f: true,
     })
 
     // Watch the current directory.
     if (args._ == '.')
       return watch(process.cwd())
+
+    // Temporary watcher.
+    if (args.f && args[0] == '.') {
+      require('./server/init')
+      let watcher = require('./server/watcher')
+      return watcher.start().then(async () => {
+        await watcher.watch(process.cwd())
+        good('Watching...')
+      }).catch(fatal)
+    }
 
     if (Array.isArray(args.x) && !args.w)
       fatal('Cannot use -x without -w')

@@ -57,10 +57,10 @@ socket.on('subscription', (evt) => {
 })
 
 module.exports = {
-  async start() {
+  async start(cacheName) {
     await socket.connect()
     if (!watched) {
-      watched = new PackageCache('watched.json')
+      watched = new PackageCache(cacheName)
       await watched.load(watch)
     }
   },

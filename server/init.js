@@ -8,9 +8,6 @@ require('fsx').writeDir(require('./paths').WCH_DIR)
 // Default behavior for unhandled process events.
 require('unhandled')
 
-// Setup the log file.
-require('./log')
-
 // Override the `wch` package.
 let Module = require('module')
 let loadModule = Module._load

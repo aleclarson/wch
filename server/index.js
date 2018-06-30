@@ -1,4 +1,5 @@
 require('./init')
+require('./log')
 
 let watcher = require('./watcher')
 let slush = require('slush')
@@ -8,7 +9,7 @@ let fs = require('fsx')
 let {SOCK_PATH} = require('./paths')
 
 // Connect to watchman.
-let starting = watcher.start()
+let starting = watcher.start('watched.json')
 starting.catch(onError)
 
 process.on('exit', () => {

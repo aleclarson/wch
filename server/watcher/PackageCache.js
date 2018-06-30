@@ -7,32 +7,39 @@ let {WCH_DIR} = require('../paths')
 
 function PackageCache(cacheName) {
   let packs = Object.create(null)
-  let cachePath = path.join(WCH_DIR, cacheName)
 
   let persist = noop
-  this.load = async function(each) {
-    this.load = noop
-    if (fs.isFile(cachePath)) {
-      let cache = JSON.parse(fs.readFile(cachePath))
+  if (cacheName) {
+    let cachePath = path.join(WCH_DIR, cacheName)
+    this.load = async function(each) {
+      this.load = noop
 
-      // Synchronize our watch list with Watchman.
-      let count = 0, roots = await cmd.roots()
-      await Promise.all(cache.map(dir => {
-        let link = fs.realPath(dir)
-        if (fs.exists(link) && cmd.root(link, roots)) {
-          count += 1; return each(dir)
-        }
-      }))
+      let cache, count = 0
+      if (fs.isFile(cachePath)) {
+        cache = JSON.parse(fs.readFile(cachePath))
+
+        // Synchronize our watch list with Watchman.
+        let roots = await cmd.roots()
+        await Promise.all(cache.map(dir => {
+          let link = fs.realPath(dir)
+          if (fs.exists(link) && cmd.root(link, roots)) {
+            count += 1; return each(dir)
+          }
+        }))
+      }
 
       // Set the `persist` function *after* loading to avoid needless writes.
       persist = function() {
-        let cache = JSON.stringify(Object.keys(packs))
-        fs.writeFile(cachePath, cache)
+        let roots = Object.keys(packs)
+        fs.writeFile(cachePath, JSON.stringify(roots))
       }
 
       // Persist our watch list if any roots were removed.
-      if (count < cache.length) persist()
+      // if (cache && count < cache.length) persist()
+      persist()
     }
+  } else {
+    this.load = noop
   }
 
   this.has = function(root) {
