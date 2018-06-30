@@ -18,25 +18,15 @@ plugins immediately.
 
 ## Making a plugin
 
-Plugins adhere to a simple method interface.
+Plugins are simply functions that return an object with the following
+interface.
 
-#### run()
+- `attach(pack: Package): void`
+- `detach(pack: Package): void`
+- `stop(): void`
 
-Export a `run` method if your plugin needs to set things
-up before receiving any roots.
+The `attach` method is called when a package begins using the plugin.
 
-#### end()
+The `detach` method is called when a package stops using the plugin.
 
-On the flip side, export an `end` method if your plugin
-needs to tear things down when no roots are using it.
-
-#### add(root)
-
-You *must* export an `add` method that takes a root
-and does something with it. This is the heart of your
-plugin. The given root has your plugin in its `devDependencies`.
-
-#### remove(root)
-
-Export a `remove` method if your plugin needs to tear
-things down when a root stops using it.
+The `stop` method is called when no packages need the plugin.
