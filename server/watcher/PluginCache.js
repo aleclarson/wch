@@ -153,8 +153,15 @@ class PluginCache {
   _attachPlugin(pack, id) {
     let plug = this.byName[id]
     if (!plug) {
-      plug = runPlugin(id)
-      this.byName[id] = plug
+      let path = require.resolve(id)
+      try {
+        plug = runPlugin(id, path)
+        this.byName[id] = plug
+      } catch(err) {
+        log.warn(`'${id}' threw while starting up`)
+        console.error(err.stack)
+        return
+      }
     }
     attachPlugin(pack, plug, id)
   }
@@ -191,25 +198,18 @@ function createLog(name) {
   return log.create().prefix(log.coal(`[${name}]`))
 }
 
-function runPlugin(id) {
+function runPlugin(id, path) {
   debug('Running plugin:', id)
-  let runPath = require.resolve(id)
-  try {
-    let run = require(runPath)
-    if (typeof run != 'function') {
-      throw TypeError('Plugins must export a function')
-    }
-    let plug = {
-      name: id.replace(/^wch-/, ''),
-      packs: new Map(),
-    }
-    Object.assign(plug, run.call(plug, createLog(plug.name)))
-    return plug
+  let run = require(path)
+  if (typeof run != 'function') {
+    throw TypeError('Plugins must export a function')
   }
-  catch(err) {
-    log.warn(`'${id}' threw while starting up`)
-    console.error(err.stack)
+  let plug = {
+    name: id.replace(/^wch-/, ''),
+    packs: new Map(),
   }
+  Object.assign(plug, run.call(plug, createLog(plug.name)))
+  return plug
 }
 
 function attachPlugin(pack, plug, id) {
