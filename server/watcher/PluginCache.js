@@ -10,7 +10,7 @@ let debug = log.debug('wch:PluginCache')
 
 class PluginCache {
   constructor() {
-    this.byName = Object.create(null)
+    this.byId = Object.create(null)
     this.byPack = new Map()
   }
   // Attach a package to its plugins.
@@ -76,11 +76,11 @@ class PluginCache {
   }
   // Unload all plugins for every package.
   destroy() {
-    for (let id in this.byName) {
-      let plug = this.byName[id]
+    for (let id in this.byId) {
+      let plug = this.byId[id]
       stopPlugin(plug, id)
     }
-    this.byName = Object.create(null)
+    this.byId = Object.create(null)
   }
   // Load configuration for a package.
   _loadProject(pack) {
@@ -123,7 +123,7 @@ class PluginCache {
     let ctx = Object.create(global)
     ctx.self = pack
     this.byPack.get(pack).forEach(id => {
-      let plug = this.byName[id]
+      let plug = this.byId[id]
       ctx[plug.name] = plug.packs.get(pack)
     })
 
@@ -144,19 +144,19 @@ class PluginCache {
   _reloadPlugins(pack, list) {
     if (!list) list = this.byPack.get(pack)
     list && list.forEach(id => {
-      let plug = this.byName[id]
+      let plug = this.byId[id]
       detachPlugin(pack, plug, id)
       attachPlugin(pack, plug, id)
     })
   }
   // Attach a package to a plugin.
   _attachPlugin(pack, id) {
-    let plug = this.byName[id]
+    let plug = this.byId[id]
     if (!plug) {
       let path = require.resolve(id)
       try {
         plug = runPlugin(id, path)
-        this.byName[id] = plug
+        this.byId[id] = plug
       } catch(err) {
         log.warn(`'${id}' threw while starting up`)
         console.error(err.stack)
@@ -167,10 +167,10 @@ class PluginCache {
   }
   // Detach a package from a plugin.
   _detachPlugin(pack, id) {
-    let plug = this.byName[id]
+    let plug = this.byId[id]
     detachPlugin(pack, plug, id)
     if (plug.packs.size == 0) {
-      delete this.byName[id]
+      delete this.byId[id]
       stopPlugin(plug, id)
     }
   }
