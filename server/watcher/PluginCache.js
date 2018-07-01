@@ -24,37 +24,32 @@ class PluginCache {
       deps = Object.keys(deps)
         .filter(id => id.startsWith('wch-'))
 
-      let changed = false
       if (loaded) {
         // Find removed plugins.
-        loaded && loaded.forEach(id => {
+        loaded.forEach(id => {
           if (deps.includes(id)) return
           this._detachPlugin(pack, id)
-          changed = true
         })
 
         // Find added/unremoved plugins.
         let reloads = deps.filter(id => {
           if (loaded.includes(id)) return true
           this._attachPlugin(pack, id)
-          changed = true
         })
 
-        // Reload unchanged plugins.
+        // Reload unremoved plugins.
         if (reloads.length) {
           this._reloadPlugins(pack, reloads)
         }
       }
       else if (deps.length) {
-        changed = true
         deps.forEach(id => {
           this._attachPlugin(pack, id)
         })
       }
-      if (changed) {
-        this.byPack.set(pack, deps)
-        this._loadProject(pack)
-      }
+      else return
+      this.byPack.set(pack, deps)
+      this._loadProject(pack)
     } else {
       this.detach(pack)
     }
@@ -146,8 +141,7 @@ class PluginCache {
     }
   }
   // Reconfigure a list of plugins for a package.
-  _reloadPlugins(pack, list) {
-    if (!list) list = this.byPack.get(pack)
+  _reloadPlugins(pack, list = this.byPack.get(pack)) {
     list && list.forEach(id => {
       let plug = this.byId[id]
       detachPlugin(pack, plug, id)
