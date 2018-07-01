@@ -100,6 +100,11 @@ class PluginCache {
       }
     }
 
+    if (/project\.[^\/]+$/.test(loadPath)) {
+      let ext = path.extname(loadPath)
+      log.warn(`Using project${ext} is deprecated. Use wch.config${ext} instead\n  ${pack.path}`)
+    }
+
     let load = fs.readFile(loadPath)
     if (coffee) {
       try {
