@@ -3,6 +3,7 @@ let quest = require('quest')
 let noop = require('noop')
 let path = require('path')
 let uuid = require('uuid')
+let log = require('lodge').debug('wch')
 let se = require('socket-events')
 let fs = require('fsx')
 
@@ -85,6 +86,7 @@ function connect(resolve, reject) {
     if (isTest) {
       sock._res = req.res
     }
+    log('connected')
     connecting = null
     resolve()
     events.emit('connect')
@@ -95,11 +97,13 @@ function connect(resolve, reject) {
   stream.on('close', close)
   function close() {
     if (sock.connected) {
+      log('lost connection')
       sock.connected = false
       connecting = new Promise(reconnect)
       connecting.catch(noop)
       events.emit('close')
     } else { // Closed by user
+      log('closed by user')
       abortReconnect()
       if (connecting) {
         connecting = null
@@ -138,6 +142,7 @@ function connect(resolve, reject) {
     }
   }
 
+  log('connecting')
   events.emit('connecting')
 }
 
@@ -162,6 +167,7 @@ function reconnect(resolve, reject) {
       }
     }, delay)
   } else {
+    events.emit('offline')
     watcher = fs.watch(WCH_DIR, (evt, file) => {
       if (file == SOCK_NAME) {
         watcher.close()

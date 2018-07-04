@@ -3,6 +3,7 @@ let events = require('./events')
 let quest = require('quest')
 let noop = require('noop')
 let path = require('path')
+let log = require('lodge').debug('wch')
 let cp = require('child_process')
 let fs = require('fsx')
 
@@ -65,6 +66,7 @@ wch.stream = function(root, opts) {
       'x-client-id': sock.id,
     })
 
+    log('subscribe:', log.lblue(root))
     let {id} = await quest.json(req, {root, opts})
     return events.on(id, (file) => {
       stream.push(file)
