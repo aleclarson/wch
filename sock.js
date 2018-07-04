@@ -119,6 +119,7 @@ function connect(resolve, reject) {
     if (connecting) {
       stream.removeListener('close', close)
       if (offlineRE.test(err.code)) {
+        events.emit('offline')
         reconnect(resolve, reject)
       } else {
         reject(err)
