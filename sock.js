@@ -48,7 +48,7 @@ sock.close = function() {
   }
 }
 
-sock.on = events.on
+sock.on = events.on.bind(events)
 if (isTest) {
   sock._reset = function() {
     events.clear()
