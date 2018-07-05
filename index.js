@@ -87,8 +87,10 @@ wch.stream = function(dir, query = {}) {
       if (stream.destroyed) return
       watcher = events.on(info.id, push)
     }).catch(err => {
-      log('stream:error', err)
-      stream.destroyed || stream.destroy(err)
+      if (err.code !== 'ECONNRESET') {
+        log('stream:error', err)
+        stream.destroyed || stream.destroy(err)
+      }
     })
 
     // This watcher is scrapped if the connection is lost.
