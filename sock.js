@@ -13,7 +13,7 @@ let {
 } = require('./paths')
 
 let isTest = process.env.NODE_ENV == 'test'
-let offlineRE = /^(ENOENT|ECONNREFUSED)$/
+let offlineRE = /^(ENOENT|ECONNREFUSED|EPIPE)$/
 let SOCK_NAME = path.relative(WCH_DIR, SOCK_PATH)
 
 let sock = quest.sock(SOCK_PATH)
