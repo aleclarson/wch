@@ -1,6 +1,6 @@
 {
   "name": "wch",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "license": "MIT",
   "description": "Watchman client",
   "repository": "https://github.com/aleclarson/wch.git",
