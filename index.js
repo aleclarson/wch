@@ -29,9 +29,10 @@ wch.unwatch = async function(root) {
   return quest.json(req, {root}).then(success)
 }
 
+wch.connect = sock.connect
+
 // Plugin events
 wch.on = function(evt, fn) {
-  sock.connect()
   return events.on(evt, fn)
 }
 
@@ -53,7 +54,6 @@ wch.stream = function(root, opts) {
   return stream
 
   async function watch() {
-    await sock.connect()
 
     // Rewatch on server restart.
     rewatcher = events.on('connect', () => {
