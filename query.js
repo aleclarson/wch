@@ -2,7 +2,7 @@
 // Default fields
 let fields = ['name', 'exists', 'new']
 
-function makeQuery(opts) {
+function wchQuery(opts) {
   if (Array.isArray(opts)) {
     return {expression: opts}
   } else {
@@ -29,7 +29,7 @@ function makeQuery(opts) {
   }
 }
 
-module.exports = makeQuery
+module.exports = wchQuery
 
 // NOTE: Numbers must be in seconds!
 function since(date) {

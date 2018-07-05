@@ -1,4 +1,5 @@
 let {Readable} = require('readable-stream')
+let wchQuery = require('./lib/query')
 let events = require('./events')
 let quest = require('quest')
 let noop = require('noop')
@@ -107,9 +108,8 @@ wch.query = function(root, query) {
   return quest.json(req, {root, query})
 }
 
-let makeQuery = require('./query')
 wch.expr = function(query) {
-  return makeQuery(query).expression
+  return wchQuery(query).expression
 }
 
 wch.list = async function() {
