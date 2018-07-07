@@ -57,6 +57,8 @@ Object.defineProperties(wch, {
 })
 
 wch.connect = sock.connect
+wch.close = sock.close
+
 wch.on = events.on.bind(events)
 
 wch.unwatch = function(...args) {
