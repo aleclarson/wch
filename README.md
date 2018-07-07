@@ -28,6 +28,13 @@ again if you wish to retry. Though, not all errors will reject the promise.
 When the `wchd` server is unreachable, the promise will stay pending while
 the client waits for the server to be restarted.
 
+The `connected` and `connecting` properties reflect the current state
+of the connection.
+
+### `wch.close(): void`
+
+Force disconnect from the `wchd` server.
+
 ### `wch.stream(dir: string, query: Object): Readable`
 
 Stream changes to matching paths within a directory.
