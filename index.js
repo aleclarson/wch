@@ -51,6 +51,11 @@ function wch(...args) {
   return run('track', args)
 }
 
+Object.defineProperties(wch, {
+  connected: {get: () => sock.connected, enumerable: true},
+  connecting: {get: () => sock.connecting, enumerable: true},
+})
+
 wch.connect = sock.connect
 wch.on = events.on.bind(events)
 
