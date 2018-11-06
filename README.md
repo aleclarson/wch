@@ -1,4 +1,4 @@
-# wch v0.10.1
+# wch v0.10.2
 
 Client library for the [wch daemon][1].
 
