@@ -5,10 +5,10 @@
   "description": "Watchman client",
   "repository": "https://github.com/aleclarson/wch.git",
   "dependencies": {
+    "@aleclarson/quest": "^0.9.0",
     "fsx": "aleclarson/fsx#1.8.0",
     "lodge": "^0.0.4",
     "nanoid": "^1.2.3",
-    "quest": "aleclarson/quest#0.8.1",
     "readable-stream": "^2.3.6",
     "socket-events": "^1.1.1"
   }
