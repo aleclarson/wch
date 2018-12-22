@@ -1,0 +1,118 @@
+dependencies:
+  fsx: github.com/aleclarson/fsx/d3dd823367a00a93b58106f5ea13138618f799e3
+  lodge: 0.0.4
+  nanoid: 1.3.4
+  quest: github.com/aleclarson/quest/c47d6d7d70e616a7fab1796b0bb7410f8731745a
+  readable-stream: 2.3.6
+  socket-events: 1.2.0
+packages:
+  /@cush/events/1.0.2:
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-daVKCMWlBcaQSMwWqnKGFtOgyAB45I4VPit+BVBKAUbEv/HOAfIhMwFqaFs7vSfHBdxXlFlbup3JZ9/ZOJgGEQ==
+  /ansi-256-colors/1.1.0:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha1-kQ3lDvzHwJ49gvL4er1rcAwYgYo=
+  /core-util-is/1.0.2:
+    dev: false
+    resolution:
+      integrity: sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=
+  /has-flag/3.0.0:
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha1-tdRU3CGZriJWmfNGfloH87lVuv0=
+  /inherits/2.0.3:
+    dev: false
+    resolution:
+      integrity: sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
+  /is-stream/1.1.0:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha1-EtSj3U5o4Lec6428hBc66A2RykQ=
+  /isarray/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
+  /lodge/0.0.4:
+    dependencies:
+      ansi-256-colors: 1.1.0
+      has-flag: 3.0.0
+    dev: false
+    resolution:
+      integrity: sha512-PNmUO/wy5TM3C9odyCGzlmDaCf+B7bSpoEl1/79fak9XspK4KLAbVQMDTfIlYCJCSicuYXmghfSg4XLbctyjpQ==
+  /nanoid/1.3.4:
+    dev: false
+    resolution:
+      integrity: sha512-4ug4BsuHxiVHoRUe1ud6rUFT3WUMmjXt1W0quL0CviZQANdan7D8kqN5/maw53hmAApY/jfzMRkC57BNNs60ZQ==
+  /process-nextick-args/2.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-MtEC1TqN0EU5nephaJ4rAtThHtC86dNN9qCuEhtshvpVBkAW5ZO7BASN9REnF9eoXGcRub+pFuKEpOHE+HbEMw==
+  /readable-stream/2.3.6:
+    dependencies:
+      core-util-is: 1.0.2
+      inherits: 2.0.3
+      isarray: 1.0.0
+      process-nextick-args: 2.0.0
+      safe-buffer: 5.1.2
+      string_decoder: 1.1.1
+      util-deprecate: 1.0.2
+    dev: false
+    resolution:
+      integrity: sha512-tQtKA9WIAhBF3+VLAseyMqZeBjW0AHJoxOtYqSUZNJxauErmLbVm2FW1y+J/YA9dUrAC39ITejlZWhVIwawkKw==
+  /safe-buffer/5.1.2:
+    dev: false
+    resolution:
+      integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==
+  /socket-events/1.2.0:
+    dependencies:
+      '@cush/events': 1.0.2
+      is-stream: 1.1.0
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-8PJir0Dls4Exyd3k6hEPqAq6lOJtzzbvsLTY8Wg5JiHQRVdNBGyPva1xgHW4xzZ7DiJX2/8DW5B0X65gSe9Iuw==
+  /string_decoder/1.1.1:
+    dependencies:
+      safe-buffer: 5.1.2
+    dev: false
+    resolution:
+      integrity: sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==
+  /util-deprecate/1.0.2:
+    dev: false
+    resolution:
+      integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=
+  github.com/aleclarson/fsx/d3dd823367a00a93b58106f5ea13138618f799e3:
+    dev: false
+    name: fsx
+    resolution:
+      tarball: 'https://codeload.github.com/aleclarson/fsx/tar.gz/d3dd823367a00a93b58106f5ea13138618f799e3'
+    version: 1.8.0
+  github.com/aleclarson/quest/c47d6d7d70e616a7fab1796b0bb7410f8731745a:
+    dependencies:
+      readable-stream: 2.3.6
+    dev: false
+    name: quest
+    resolution:
+      tarball: 'https://codeload.github.com/aleclarson/quest/tar.gz/c47d6d7d70e616a7fab1796b0bb7410f8731745a'
+    version: 0.8.1
+registry: 'https://registry.npmjs.org/'
+shrinkwrapMinorVersion: 9
+shrinkwrapVersion: 3
+specifiers:
+  fsx: 'github:aleclarson/fsx#1.8.0'
+  lodge: ^0.0.4
+  nanoid: ^1.2.3
+  quest: 'github:aleclarson/quest#0.8.1'
+  readable-stream: ^2.3.6
+  socket-events: ^1.1.1
